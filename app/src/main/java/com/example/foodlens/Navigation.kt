@@ -19,6 +19,8 @@ import com.example.foodlens.screens.LoginPage
 import com.example.foodlens.screens.ProfilePage
 import com.example.foodlens.screens.Register
 import com.example.foodlens.screens.SearchScreen
+import com.example.foodlens.screens.UploadScreen
+
 @Composable
 fun Navigation(navController: NavController,context: Context) {
 
@@ -38,7 +40,7 @@ fun Navigation(navController: NavController,context: Context) {
         composable("loginPage") { LoginPage(navController) }
         composable("register") { Register(navController,) }
         composable("home") { Home(navController,userViewModel) }
-        composable("search") { SearchScreen(navController, viewModel = userViewModel) }
+        composable("search") { UploadScreen(navController, viewModel = userViewModel) }
         composable("profile") { ProfilePage(navController,userViewModel) }
         composable("categoriesPage"){ CategoriesPage(navController, userViewModel) }
         composable(
