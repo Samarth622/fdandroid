@@ -56,6 +56,44 @@ data class ProductAnalysisResponse(
     val productImage: String
 )
 
+data class UserProfile(
+    val name: String?,
+    val mobile: String?,
+    val gender: String?,
+    val email: String?,
+    val age: String?,
+    val height: String?,
+    val weight: String?,
+    val medicalHistory: String?,
+    val allergies: String?,
+    val bloodGroup: String?
+)
+
+// Response wrapper for getProfile
+data class UserProfileResponse(
+    val User: UserProfile
+)
+
+// Request body for updateProfile
+data class UpdateProfileRequest(
+    val name: String?,
+    val mobile: String?,
+    val gender: String?,
+    val email: String?,
+    val age: Int?,
+    val height: Int?,
+    val weight: Int?,
+    val medicalHistory: String?,
+    val allergies: String?,
+    val bloodGroup: String?
+)
+
+// Response wrapper for updateProfile
+data class UpdateProfileResponse(
+    val message: String,
+    val user: UserProfile
+)
+
 interface LoginApiService {
     @POST("user/login")
     suspend fun loginUser(@Body request: LoginRequest): Response<LoginResponse>
@@ -65,4 +103,11 @@ interface LoginApiService {
 
     @GET("product/productAnalysis")
     suspend fun getProductAnalysis(@Query("productName") productName: String): Response<ProductAnalysisResponse>
+
+    @GET("user/profile")
+    suspend fun getUserProfile(): Response<UserProfileResponse>
+
+    @POST("user/profile")
+    suspend fun updateUserProfile(@Body request: UpdateProfileRequest): Response<UpdateProfileResponse>
+
 }

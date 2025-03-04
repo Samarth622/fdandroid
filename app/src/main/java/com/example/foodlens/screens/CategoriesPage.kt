@@ -146,7 +146,7 @@ fun ProductItem(navController: NavHostController, product: Product) {
     Card(
         modifier = Modifier
             .clickable {
-                navController.navigate("analysisPage")
+                navController.navigate("analysisPage/${product.name}")
             }
             .size(160.dp)
             .padding(top = 20.dp),
@@ -161,7 +161,7 @@ fun ProductItem(navController: NavHostController, product: Product) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            product.image_url?.let { url ->
+            product.image_url.let { url ->
                 Image(
                     painter = rememberAsyncImagePainter(url),
                     contentDescription = product.name,

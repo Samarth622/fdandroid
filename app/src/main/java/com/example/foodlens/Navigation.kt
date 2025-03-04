@@ -6,8 +6,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.foodlens.screens.AnalysisPage
 import com.example.foodlens.screens.CategoriesPage
 import com.example.foodlens.screens.GetStarted
@@ -39,7 +41,13 @@ fun Navigation(navController: NavController,context: Context) {
         composable("search") { SearchScreen(navController, viewModel = userViewModel) }
         composable("profile") { ProfilePage(navController,userViewModel) }
         composable("categoriesPage"){ CategoriesPage(navController, userViewModel) }
-        composable("analysisPage"){ AnalysisPage("Snickers",navController,) }
+        composable(
+            "analysisPage/{productName}",
+            arguments = listOf(navArgument("productName") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val productName = backStackEntry.arguments?.getString("productName") ?: ""
+            AnalysisPage(productName = productName, navHostController = navController)
+        }
         composable("loadingPage") { LoadingScreen(navController) }
 
     }
