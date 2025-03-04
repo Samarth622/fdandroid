@@ -5,34 +5,15 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,7 +31,16 @@ import androidx.navigation.NavHostController
 import com.example.foodlens.FloatingBottomNavigation
 import com.example.foodlens.R
 import com.example.foodlens.UserViewModel
+import com.example.foodlens.network.RetrofitClient
+import com.example.foodlens.networks.LoginApiService
+import com.google.gson.Gson
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
+import java.io.FileOutputStream
+import android.widget.Toast
+import kotlinx.coroutines.launch
 
 @Composable
 fun UploadScreen(navHostController: NavHostController, viewModel: UserViewModel) {
@@ -59,7 +49,6 @@ fun UploadScreen(navHostController: NavHostController, viewModel: UserViewModel)
             .fillMaxSize()
             .padding(top = 30.dp)
     ) {
-        // Background Image
         Image(
             painter = painterResource(R.drawable.background),
             contentDescription = null,
@@ -71,7 +60,7 @@ fun UploadScreen(navHostController: NavHostController, viewModel: UserViewModel)
 
         ImageField()
 
-        UploadImageType()
+        UploadImageType(navHostController)
 
         FloatingBottomNavigation(navHostController)
     }
@@ -79,9 +68,12 @@ fun UploadScreen(navHostController: NavHostController, viewModel: UserViewModel)
 
 @Composable
 fun Heading() {
-
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-        Column(modifier = Modifier.padding(50.dp).fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .padding(50.dp)
+                .fillMaxWidth()
+        ) {
             Text(
                 text = "Upload & Analyze",
                 style = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.Normal),
@@ -101,22 +93,18 @@ fun Heading() {
                     modifier = Modifier.fillMaxHeight()
                 )
             }
-
         }
-
     }
 }
 
 @Composable
 fun ImageField() {
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(bottom = 130.dp),
+            .padding(top = 130.dp),
         contentAlignment = Alignment.Center
     ) {
-
         Card(
             modifier = Modifier.size(300.dp),
             elevation = CardDefaults.cardElevation(1.dp),
@@ -124,46 +112,49 @@ fun ImageField() {
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center // Centers the content inside the Box
+                contentAlignment = Alignment.Center
             ) {
                 Text(text = "No Image")
             }
-
         }
-
-
     }
 }
 
 @Composable
-fun UploadImageType() {
+fun UploadImageType(navHostController: NavHostController) {
     val context = LocalContext.current
-    var capturedImageUri by remember { mutableStateOf<Uri?>(null) }
-    var imageBitmap by remember { mutableStateOf<Bitmap?>(null) } // Bitmap to store image
+    val coroutineScope = rememberCoroutineScope()
+    val apiService: LoginApiService = RetrofitClient.getApiService(context)
 
-    // Camera Intent Launcher
+    var capturedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var isAnalyzing by remember { mutableStateOf(false) }
+
     val cameraLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 capturedImageUri?.let { uri ->
                     try {
                         imageBitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                        Log.d("UploadScreen", "Image captured from camera: $uri")
                     } catch (e: Exception) {
-                        e.printStackTrace()
+                        Log.e("UploadScreen", "Error loading camera image: ${e.message}")
+                        Toast.makeText(context, "Error loading image: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
         }
 
-    // Gallery Intent Launcher
     val galleryLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let {
                 capturedImageUri = it
                 try {
                     imageBitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
+                    Log.d("UploadScreen", "Image selected from gallery: $uri")
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    Log.e("UploadScreen", "Error loading gallery image: ${e.message}")
+                    Toast.makeText(context, "Error loading image: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -174,12 +165,11 @@ fun UploadImageType() {
             .padding(bottom = 150.dp),
         contentAlignment = Alignment.BottomCenter
     ) {
-        // Display the captured or selected image
         imageBitmap?.let { bitmap ->
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(bottom = 215.dp)
+                modifier = Modifier.padding(top = 215.dp)
             ) {
                 Image(
                     bitmap = bitmap.asImageBitmap(),
@@ -189,20 +179,61 @@ fun UploadImageType() {
                         .size(220.dp),
                     contentScale = ContentScale.Crop
                 )
-
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Button(
-                    onClick = { /* TODO: Analyze */ },
+                    onClick = {
+                        coroutineScope.launch {
+                            isAnalyzing = true
+                            try {
+                                // Convert Bitmap to File
+                                val file = File(context.cacheDir, "upload_image.jpg")
+                                FileOutputStream(file).use { out ->
+                                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+                                }
+                                Log.d("UploadScreen", "Image file created: ${file.absolutePath}, size: ${file.length()} bytes")
+
+                                // Create MultipartBody.Part for image upload
+                                val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+                                val imagePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
+
+                                // Send image to backend
+                                val response = apiService.analyzeImage(imagePart)
+                                Log.d("UploadScreen", "Response code: ${response.code()}")
+                                if (response.isSuccessful) {
+                                    response.body()?.let { analysisResponse ->
+                                        val analysisJson = Gson().toJson(analysisResponse)
+                                        navHostController.navigate("imageAnalysisPage/$analysisJson")
+                                    } ?: Toast.makeText(context, "No analysis data received", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Log.e("UploadScreen", "Analysis failed with code: ${response.code()}, message: ${response.message()}")
+                                    Toast.makeText(context, "Analysis failed: ${response.code()}", Toast.LENGTH_SHORT).show()
+                                    if (response.code() == 401) {
+                                        navHostController.navigate("loginPage") { popUpTo(0) { inclusive = true } }
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                Log.e("UploadScreen", "Error during analysis: ${e.localizedMessage}")
+                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                            } finally {
+                                isAnalyzing = false
+                            }
+                        }
+                    },
                     modifier = Modifier.width(120.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.green))
+                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.green)),
+                    enabled = !isAnalyzing
                 ) {
-                    Text(
-                        text = "Analyze",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 17.sp,
-                        color = Color.White
-                    )
+                    if (isAnalyzing) {
+                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
+                    } else {
+                        Text(
+                            text = "Analyze",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 17.sp,
+                            color = Color.White
+                        )
+                    }
                 }
             }
         }
@@ -212,22 +243,16 @@ fun UploadImageType() {
                 .fillMaxWidth()
                 .padding(start = 10.dp),
             horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Take Photo Button
-            Column(
-                modifier = Modifier.padding(0.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Card(
                     modifier = Modifier
                         .size(100.dp)
                         .clip(RoundedCornerShape(50))
                         .clickable {
                             val file = File(context.cacheDir, "captured_image.jpg")
-                            capturedImageUri =
-                                FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
-
+                            capturedImageUri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
                             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
                                 putExtra(MediaStore.EXTRA_OUTPUT, capturedImageUri)
                             }
@@ -246,11 +271,7 @@ fun UploadImageType() {
                 Text(text = "Take Photo", fontWeight = FontWeight.SemiBold)
             }
 
-            // Select from Gallery Button
-            Column(
-                modifier = Modifier.padding(0.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Card(
                     modifier = Modifier
                         .size(100.dp)

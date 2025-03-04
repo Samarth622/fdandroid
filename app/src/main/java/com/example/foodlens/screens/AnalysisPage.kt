@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.foodlens.R
 import com.example.foodlens.network.RetrofitClient
+import com.example.foodlens.networks.ImageProductAnalysisResponse
 import com.example.foodlens.networks.LoginApiService
 import com.example.foodlens.networks.ProductAnalysisResponse
 import com.example.foodlens.networks.SuggestedAlternative
@@ -108,7 +109,7 @@ fun AnalysisPage(productName: String, navHostController: NavHostController) {
                                     .padding(vertical = 20.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                var img = response.productImage
+                                val img = response.productImage
                                     Image(
                                         painter = rememberAsyncImagePainter(img),
                                         contentDescription = null,

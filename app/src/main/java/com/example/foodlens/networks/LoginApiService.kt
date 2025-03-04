@@ -1,9 +1,12 @@
 package com.example.foodlens.networks
 
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.GET
+import retrofit2.http.Multipart
+import retrofit2.http.Part
 import retrofit2.http.Query
 
 
@@ -54,6 +57,10 @@ data class ProductAnalysis(
 data class ProductAnalysisResponse(
     val analysis: ProductAnalysis , // Wrap the actual analysis data
     val productImage: String
+)
+
+data class ImageProductAnalysisResponse(
+    val analysis: ProductAnalysis
 )
 
 data class UserProfile(
@@ -110,4 +117,7 @@ interface LoginApiService {
     @POST("user/profile")
     suspend fun updateUserProfile(@Body request: UpdateProfileRequest): Response<UpdateProfileResponse>
 
+    @Multipart
+    @POST("product/imageProductAnalysis")
+    suspend fun analyzeImage(@Part image: MultipartBody.Part): Response<ImageProductAnalysisResponse>
 }
