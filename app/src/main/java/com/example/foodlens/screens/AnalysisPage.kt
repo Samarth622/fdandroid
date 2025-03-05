@@ -13,6 +13,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -542,9 +544,15 @@ fun SuggestionsInAnalysis(suggestions: List<SuggestedAlternative>) {
                 fontSize = 24.sp,
                 modifier = Modifier.padding(10.dp)
             )
-            suggestions.forEach { suggestion ->
-                SuggestedItems(suggestion.name, suggestion.reason)
+
+            LazyRow(
+                modifier = Modifier.padding()
+            ) {
+                items(suggestions) { suggestion ->
+                    SuggestedItems(suggestion.name, suggestion.reason)
+                }
             }
+
         }
     }
 }
@@ -552,17 +560,17 @@ fun SuggestionsInAnalysis(suggestions: List<SuggestedAlternative>) {
 @Composable
 fun SuggestedItems(item: String, description: String) {
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(10.dp)) {
-        Text(
-            text = item,
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp
-        )
-
-        Text(text = description)
-
+    Card(
+        modifier = Modifier.width(300.dp)
+            .padding(8.dp),
+        colors = CardDefaults.cardColors(Color(0xFFF5F5F5)),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(10.dp)
+        ) {
+            Text(text = item, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text(text = description, fontSize = 12.sp)
+        }
     }
-
 }

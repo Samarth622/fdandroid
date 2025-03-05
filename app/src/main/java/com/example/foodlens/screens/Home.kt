@@ -73,19 +73,20 @@ fun Home(navHostController: NavHostController, viewModel: UserViewModel) {
     val category = listOf(
         Pair(R.drawable.beverages, "Beverages"),
         Pair(R.drawable.biscuits, "Biscuits"),
-        Pair(R.drawable.bread, "Bread"),
+        Pair(R.drawable.bread, "Breads & Toast"),
         Pair(R.drawable.cereals, "Cereals"),
         Pair(R.drawable.chocolates, "Chocolates"),
-        Pair(R.drawable.dairyproducts, "Dairy product"),
-        Pair(R.drawable.icecream, "Ice cream"),
+        Pair(R.drawable.dairyproducts, "Dairy Products"),
+        Pair(R.drawable.icecream, "Ice Cream"),
         Pair(R.drawable.nutbars, "Nutbars"),
-        Pair(R.drawable.oilandghee, "Ghee"),
-        Pair(R.drawable.oilandghee, "Oil"),
+        Pair(R.drawable.oilandghee, "Oil & Ghee"),
+        Pair(R.drawable.sweetandcake, "Sweets & Cakes"),
         Pair(R.drawable.snackstemplate, "Snacks"),
-        Pair(R.drawable.spices, "Spices"),
+        Pair(R.drawable.spices, "Spices & Seasonings"),
         Pair(R.drawable.vegetable, "Vegetable"),
-        Pair(R.drawable.wheat, "Wheat"),
-        Pair(R.drawable.wheat, "Pickle"),
+        Pair(R.drawable.spreadandsauces, "Spreads & Sauces"),
+        Pair(R.drawable.wheat, "Grains"),
+        Pair(R.drawable.noodleaandpasta, "Noodles & Pasta"),
     )
 
     Box(

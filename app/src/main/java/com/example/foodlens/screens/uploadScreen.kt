@@ -261,7 +261,7 @@ fun UploadImageType(navHostController: NavHostController) {
                     colors = CardDefaults.cardColors(Color.LightGray)
                 ) {
                     Image(
-                        painter = painterResource(R.drawable.cam),
+                        painter = painterResource(R.drawable.photography),
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(20.dp),
@@ -282,7 +282,7 @@ fun UploadImageType(navHostController: NavHostController) {
                     colors = CardDefaults.cardColors(Color.LightGray)
                 ) {
                     Image(
-                        painter = painterResource(R.drawable.photo),
+                        painter = painterResource(R.drawable.gallery),
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(20.dp),

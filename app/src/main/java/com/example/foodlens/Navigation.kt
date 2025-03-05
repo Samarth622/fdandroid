@@ -20,6 +20,7 @@ import com.example.foodlens.screens.LoadingScreen
 import com.example.foodlens.screens.LoginPage
 import com.example.foodlens.screens.ProfilePage
 import com.example.foodlens.screens.Register
+import com.example.foodlens.screens.SuggestionPage
 import com.example.foodlens.screens.UploadScreen
 import com.google.gson.Gson
 
@@ -61,7 +62,7 @@ fun Navigation(navController: NavController,context: Context) {
             AnalysisPageImage(analysisResponse = analysisResponse, navHostController = navController)
         }
         composable("loadingPage") { LoadingScreen(navController) }
-
+        composable("suggestion") { SuggestionPage(navController, userViewModel)  }
     }
 }
 

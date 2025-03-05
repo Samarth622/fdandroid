@@ -76,6 +76,16 @@ data class UserProfile(
     val bloodGroup: String?
 )
 
+data class FoodRecommendation(
+    val productName: String,
+    val benefits: String,
+    val category: String
+)
+
+data class FoodRecommendationsResponse(
+    val foodRecommendations: List<FoodRecommendation>
+)
+
 // Response wrapper for getProfile
 data class UserProfileResponse(
     val User: UserProfile
@@ -120,4 +130,7 @@ interface LoginApiService {
     @Multipart
     @POST("product/imageProductAnalysis")
     suspend fun analyzeImage(@Part image: MultipartBody.Part): Response<ImageProductAnalysisResponse>
+
+    @GET("product/productSuggest")
+    suspend fun getFoodRecommendations(): Response<FoodRecommendationsResponse>
 }
