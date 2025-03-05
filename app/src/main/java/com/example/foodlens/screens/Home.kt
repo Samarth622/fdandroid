@@ -97,16 +97,9 @@ fun Home(navHostController: NavHostController, viewModel: UserViewModel) {
         Image(
             painter = painterResource(R.drawable.background),
             contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.size(30.dp),
         )
-
-//        TopBar()
-
-//        Card(modifier = Modifier.fillMaxSize(),
-//            colors = CardDefaults.cardColors(colorResource(R.color.lightGreen))){
-//
-//        }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -261,8 +254,8 @@ fun HomeCategoryItem(
         ) {
             Image(
                 painter = painterResource(id = drawable), contentDescription = cat,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.scale(1.5f)
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.scale(1.5f).size(100.dp)
             )
             Text(text = cat, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
         }

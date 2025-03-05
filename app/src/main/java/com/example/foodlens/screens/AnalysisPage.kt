@@ -17,7 +17,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -37,12 +39,13 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.foodlens.R
 import com.example.foodlens.network.RetrofitClient
-import com.example.foodlens.networks.ImageProductAnalysisResponse
 import com.example.foodlens.networks.LoginApiService
 import com.example.foodlens.networks.ProductAnalysisResponse
 import com.example.foodlens.networks.SuggestedAlternative
@@ -99,7 +102,7 @@ fun AnalysisPage(productName: String, navHostController: NavHostController) {
                     item {
                         Card(
                             modifier = Modifier
-                                .padding(top = 20.dp)
+                                .padding(top = 20.dp, bottom = 20.dp)
                                 .fillMaxWidth()
                                 .size(350.dp),
                             colors = CardDefaults.cardColors(Color.White),
@@ -115,17 +118,21 @@ fun AnalysisPage(productName: String, navHostController: NavHostController) {
                                     Image(
                                         painter = rememberAsyncImagePainter(img),
                                         contentDescription = null,
-                                        modifier = Modifier.scale(1.2f),
-                                        contentScale = ContentScale.Crop
+                                        modifier = Modifier.size(160.dp),
+                                        contentScale = ContentScale.Fit
                                     )
 
                                 Text(
                                     text = productName,
-                                    modifier = Modifier.padding(top = 180.dp),
+                                    fontSize = 22.sp,
+                                    modifier = Modifier.padding(top = 210.dp),
                                     color = Color(54, 54, 54, 191),
-                                    style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.SemiBold)
+                                    style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.SemiBold),
+                                    maxLines = Int.MAX_VALUE, // Allows unlimited lines, text will wrap as needed
+                                    overflow = TextOverflow.Clip, // Optional: specifies how to handle overflow, Clip is default
+                                    textAlign = TextAlign.Center
                                 )
-                                MeterArc(data.overall_analysis.rating.toFloat() * 2, modifier = Modifier.scale(1.1f)) // Scale 1-5 to 1-10
+                                MeterArc(data.overall_analysis.rating.toFloat() * 2, modifier = Modifier.scale(1.15f)) // Scale 1-5 to 1-10
                                 AboutColor()
                             }
                         }
@@ -175,15 +182,15 @@ fun AnalysisPage(productName: String, navHostController: NavHostController) {
 @Composable
 fun MeterArc(value: Float, modifier: Modifier = Modifier) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(bottom = 20.dp),
         contentAlignment = Alignment.Center
     ) {
-        val sweepAngle = (252f / 5) * value // 70% of 360° scaled to 5 max value
+        val sweepAngle = (252f / 5) * value.coerceIn(0.0f, 5.0f) // 70% of 360° scaled to 5 max value
 
         val color = when {
-            value < 1.7 -> colorResource(R.color.red)
-            value in 1.7f..2.8f -> colorResource(R.color.orange)
-            value in 2.9f..3.7f -> colorResource(R.color.yellow)
+            value < 1.9 -> colorResource(R.color.red)
+            value in 1.9f..3.0f -> colorResource(R.color.orange)
+            value in 3.0f..3.9f -> colorResource(R.color.yellow)
             else -> colorResource(R.color.green)
         }
 
@@ -230,10 +237,10 @@ fun AboutColor() {
             verticalAlignment = Alignment.CenterVertically
         )
         {
-            AboutColorItem("Healthy", colorResource(R.color.green))
-            AboutColorItem("Neutral", colorResource(R.color.yellow))
-            AboutColorItem("Unhealthy", colorResource(R.color.orange))
-            AboutColorItem("Unhealthy", colorResource(R.color.red))
+            AboutColorItem("Safe", colorResource(R.color.green))
+            AboutColorItem("Moderate", colorResource(R.color.yellow))
+            AboutColorItem("Risky", colorResource(R.color.orange))
+            AboutColorItem("Avoid", colorResource(R.color.red))
 
 
         }
@@ -529,15 +536,13 @@ fun Conclusion(item: String, description: String) {
 
 @Composable
 fun SuggestionsInAnalysis(suggestions: List<SuggestedAlternative>) {
-
     Card(
         modifier = Modifier
             .wrapContentSize()
             .padding(top = 20.dp),
         colors = CardDefaults.cardColors(Color.White),
     ) {
-
-        Column() {
+        Column {
             Text(
                 text = "Suggested Food Items",
                 fontWeight = FontWeight.SemiBold,
@@ -552,25 +557,39 @@ fun SuggestionsInAnalysis(suggestions: List<SuggestedAlternative>) {
                     SuggestedItems(suggestion.name, suggestion.reason)
                 }
             }
-
         }
     }
 }
 
 @Composable
 fun SuggestedItems(item: String, description: String) {
-
     Card(
-        modifier = Modifier.width(300.dp)
+        modifier = Modifier
+            .size(width = 300.dp, height = 150.dp) // Fixed width and height
             .padding(8.dp),
         colors = CardDefaults.cardColors(Color(0xFFF5F5F5)),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(10.dp)
+            modifier = Modifier
+                .padding(10.dp)
+                .fillMaxSize(), // Ensure content fills the card
+            verticalArrangement = Arrangement.SpaceBetween // Distribute space evenly
         ) {
-            Text(text = item, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Text(text = description, fontSize = 12.sp)
+            Text(
+                text = item,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                maxLines = 1, // Limit to one line
+                overflow = TextOverflow.Ellipsis // Truncate with ellipsis if too long
+            )
+            Text(
+                text = description,
+                fontSize = 12.sp,
+                maxLines = 4, // Limit to three lines (adjust as needed)
+                overflow = TextOverflow.Ellipsis // Truncate with ellipsis if too long
+            )
         }
     }
 }
+

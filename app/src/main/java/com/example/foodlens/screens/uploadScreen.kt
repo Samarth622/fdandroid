@@ -71,7 +71,7 @@ fun Heading() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
         Column(
             modifier = Modifier
-                .padding(50.dp)
+                .padding(20.dp)
                 .fillMaxWidth()
         ) {
             Text(
@@ -101,9 +101,8 @@ fun Heading() {
 fun ImageField() {
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 130.dp),
-        contentAlignment = Alignment.Center
+            .fillMaxSize().
+        padding(top = 190.dp, start = 48.dp, bottom = 30.dp ),
     ) {
         Card(
             modifier = Modifier.size(300.dp),
@@ -169,7 +168,7 @@ fun UploadImageType(navHostController: NavHostController) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(top = 215.dp)
+                modifier = Modifier.padding(bottom = 205.dp)
             ) {
                 Image(
                     bitmap = bitmap.asImageBitmap(),

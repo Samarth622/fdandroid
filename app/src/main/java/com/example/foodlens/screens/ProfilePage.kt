@@ -9,6 +9,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.ExitToApp
@@ -31,6 +32,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -131,8 +133,7 @@ fun ProfilePage(navHostController: NavHostController, viewModel: UserViewModel) 
 
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 30.dp),
+            .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Image(
@@ -150,7 +151,7 @@ fun ProfilePage(navHostController: NavHostController, viewModel: UserViewModel) 
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 40.dp)
+                    .padding(top = 20.dp)
             ) {
                 item {
                     Column(
@@ -197,6 +198,7 @@ fun ProfilePage(navHostController: NavHostController, viewModel: UserViewModel) 
                             onClick = { if (isEditing) saveProfile() else isEditing = true },
                             modifier = Modifier
                                 .fillMaxWidth(0.4f)
+                                .padding(bottom = 25.dp)
                                 .clip(RoundedCornerShape(12.dp)),
                             colors = if (!isEditing) ButtonDefaults.buttonColors(Color.Gray) else ButtonDefaults.buttonColors(Color.Black)
                         ) {
@@ -243,6 +245,9 @@ fun ProfileField(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.LightGray,
                     unfocusedBorderColor = Color.Black
+                ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = if (label == "Age" || label == "Height(cm)" || label == "Weight(kg)") KeyboardType.Number else KeyboardType.Text
                 )
             )
         } else {

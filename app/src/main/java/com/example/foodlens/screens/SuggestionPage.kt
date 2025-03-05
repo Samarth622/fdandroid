@@ -89,7 +89,7 @@ fun SuggestionPage(navHostController: NavHostController, viewModel: UserViewMode
                     CircularProgressIndicator()
                 }
             } else {
-                LazyColumn(modifier = Modifier.padding(top = 40.dp)) {
+                LazyColumn(modifier = Modifier.padding(bottom = 65.dp)) {
                     item {
                         Spacer(modifier = Modifier.height(10.dp))
                         recommendations?.let { response ->

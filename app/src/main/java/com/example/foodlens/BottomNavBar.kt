@@ -26,7 +26,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 @Composable
 fun FloatingBottomNavigation(navHostController: NavHostController) {
     val items = listOf("home", "search", "suggestion", "profile",)
-    val icons = listOf(Icons.Default.Home, Icons.Default.Search,Icons.Default.Notifications, Icons.Default.Person)
+    val icons = listOf(Icons.Default.Home, Icons.Default.Search, Icons.Default.Notifications, Icons.Default.Person)
 
     // Track current destination
     val currentDestination by navHostController.currentBackStackEntryAsState()
@@ -34,12 +34,12 @@ fun FloatingBottomNavigation(navHostController: NavHostController) {
 
     Box(
         modifier = Modifier
-            .fillMaxSize().padding(10.dp),
+            .fillMaxSize().padding(bottom = 15.dp, start = 10.dp, end = 10.dp),
         contentAlignment = Alignment.BottomCenter
     ) {
         Card(
             colors = CardDefaults.cardColors(containerColor = colorResource(R.color.white)),
-            elevation = CardDefaults.cardElevation(8.dp),
+            elevation = CardDefaults.cardElevation(10.dp),
             shape = RoundedCornerShape(40.dp),
             modifier = Modifier
                 .height(70.dp)

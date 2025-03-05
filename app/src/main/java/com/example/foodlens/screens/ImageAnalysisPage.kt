@@ -6,19 +6,19 @@ import androidx.navigation.NavHostController
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.foodlens.R
 import com.example.foodlens.networks.ImageProductAnalysisResponse
-import com.example.foodlens.networks.ProductAnalysis
 
 @Composable
 fun AnalysisPageImage(analysisResponse: ImageProductAnalysisResponse, navHostController: NavHostController) {
@@ -43,7 +43,7 @@ fun AnalysisPageImage(analysisResponse: ImageProductAnalysisResponse, navHostCon
             item {
                 Card(
                     modifier = Modifier
-                        .padding(top = 20.dp)
+                        .padding(top = 20.dp, bottom = 20.dp)
                         .fillMaxWidth()
                         .size(350.dp),
                     colors = CardDefaults.cardColors(Color.White),
@@ -59,26 +59,28 @@ fun AnalysisPageImage(analysisResponse: ImageProductAnalysisResponse, navHostCon
                             Image(
                                 painter = rememberAsyncImagePainter(R.drawable.nt),
                                 contentDescription = null,
-                                modifier = Modifier
-                                    .scale(1.2f)
-                                    .clip(RoundedCornerShape(8.dp)),
+                                modifier = Modifier.size(200.dp),
                                 contentScale = ContentScale.Crop
                             )
 
                         Text(
                             text = "Analyzed Image",
-                            modifier = Modifier.padding(top = 180.dp),
+                            fontSize = 22.sp,
+                            modifier = Modifier.padding(top = 210.dp),
                             color = Color(54, 54, 54, 191),
-                            style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.SemiBold)
+                            style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.SemiBold),
+                            maxLines = Int.MAX_VALUE, // Allows unlimited lines, text will wrap as needed
+                            overflow = TextOverflow.Clip, // Optional: specifies how to handle overflow, Clip is default
+                            textAlign = TextAlign.Center
                         )
-                        MeterArc(data.overall_analysis.rating.toFloat() * 2, modifier = Modifier.scale(1.1f))
+                        MeterArc(data.overall_analysis.rating.toFloat() * 2, modifier = Modifier.scale(1.15f))
                         AboutColor()
                     }
                 }
             }
             item {
-                val concerns = data.nutrient_analysis.filter { it.rating < 4 }
-                val neutral = data.nutrient_analysis.filter { it.rating in 4..7 }
+                val concerns = data.nutrient_analysis.filter { it.rating <= 4 }
+                val neutral = data.nutrient_analysis.filter { it.rating in 5..7 }
                 val likes = data.nutrient_analysis.filter { it.rating > 7 }
 
                 if (concerns.isNotEmpty()) {

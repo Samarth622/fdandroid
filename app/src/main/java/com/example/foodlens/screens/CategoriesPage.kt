@@ -20,6 +20,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -95,12 +96,11 @@ fun CategoriesPage(navHostController: NavHostController, viewModel: UserViewMode
                     items(products.chunked(2)) { rowItems ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
+                            horizontalArrangement = if (rowItems.size == 1) Arrangement.Center else Arrangement.SpaceEvenly
                         ) {
                             rowItems.forEach { product ->
                                 ProductItem(navHostController, product)
                             }
-                            if (rowItems.size == 1) Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                     item { Spacer(modifier = Modifier.height(10.dp)) }
@@ -149,7 +149,7 @@ fun ProductItem(navController: NavHostController, product: Product) {
                 navController.navigate("analysisPage/${product.name}")
             }
             .size(160.dp)
-            .padding(top = 20.dp),
+            .padding(top = 12.dp),
         elevation = CardDefaults.cardElevation(10.dp),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
@@ -161,22 +161,22 @@ fun ProductItem(navController: NavHostController, product: Product) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            product.image_url.let { url ->
-                Image(
-                    painter = rememberAsyncImagePainter(url),
-                    contentDescription = product.name,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                )
-            }
+            Image(
+                painter = rememberAsyncImagePainter(product.image_url),
+                contentDescription = product.name,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = product.name,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
-                maxLines = 1
+                maxLines = 1,
+                textAlign = TextAlign.Center, // Ensure center alignment
+                modifier = Modifier.fillMaxWidth() // Make text take full width to center properly
             )
         }
     }
