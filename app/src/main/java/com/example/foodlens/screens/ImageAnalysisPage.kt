@@ -57,7 +57,7 @@ fun AnalysisPageImage(analysisResponse: ImageProductAnalysisResponse, navHostCon
                     ) {
 
                             Image(
-                                painter = rememberAsyncImagePainter(R.drawable.biscuits),
+                                painter = rememberAsyncImagePainter(R.drawable.nt),
                                 contentDescription = null,
                                 modifier = Modifier
                                     .scale(1.2f)

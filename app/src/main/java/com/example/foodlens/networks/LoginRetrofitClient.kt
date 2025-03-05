@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    private const val BASE_URL = "http://192.168.219.138:3000/api/v1/" // Replace with your local IP
+    private const val BASE_URL = "http://192.168.236.137:3000/api/v1/" // Replace with your local IP
 
     private var token: String? = null
 
