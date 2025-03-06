@@ -128,7 +128,7 @@ fun AnalysisPage(productName: String, navHostController: NavHostController) {
                                     modifier = Modifier.padding(top = 210.dp),
                                     color = Color(54, 54, 54, 191),
                                     style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.SemiBold),
-                                    maxLines = Int.MAX_VALUE, // Allows unlimited lines, text will wrap as needed
+                                    maxLines = 1, // Allows unlimited lines, text will wrap as needed
                                     overflow = TextOverflow.Clip, // Optional: specifies how to handle overflow, Clip is default
                                     textAlign = TextAlign.Center
                                 )

@@ -34,12 +34,12 @@ data class ProductsResponse(
 
 data class NutrientAnalysis(
     val nutrient: String,
-    val rating: Int, // 1-10
+    val rating: Float, // 1-10
     val explanation: String
 )
 
 data class OverallAnalysis(
-    val rating: Int, // 1-5
+    val rating: Float, // 1-5
     val explanation: String
 )
 

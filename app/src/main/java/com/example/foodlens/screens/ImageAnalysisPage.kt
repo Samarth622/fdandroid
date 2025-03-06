@@ -79,9 +79,9 @@ fun AnalysisPageImage(analysisResponse: ImageProductAnalysisResponse, navHostCon
                 }
             }
             item {
-                val concerns = data.nutrient_analysis.filter { it.rating <= 4 }
-                val neutral = data.nutrient_analysis.filter { it.rating in 5..7 }
-                val likes = data.nutrient_analysis.filter { it.rating > 7 }
+                val concerns = data.nutrient_analysis.filter { it.rating <= 4.0 }
+                val neutral = data.nutrient_analysis.filter { it.rating in 5.0..7.0 }
+                val likes = data.nutrient_analysis.filter { it.rating > 7.0 }
 
                 if (concerns.isNotEmpty()) {
                     WhatIsItUpTo("What Concerns Us", R.drawable.shocked)
