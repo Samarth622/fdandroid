@@ -11,7 +11,7 @@
     <color name="background"> #c9c9c0</color>
     <color name="lightGrey">#D1E7DFED</color>
     <color name="red">#FF0000</color>
-    <color name="orange">#FFA500</color>
+    <color name="orange">#FF6F00</color>
     <color name="yellow">#FFFFc20E</color>
     <color name="green">#21bf70</color>
 </resources>

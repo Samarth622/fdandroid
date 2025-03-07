@@ -1,12 +1,12 @@
 package com.example.foodlens.screens
 
+import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import androidx.compose.ui.res.colorResource
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -18,7 +18,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -34,11 +36,13 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
@@ -48,12 +52,10 @@ import com.example.foodlens.networks.LoginApiService
 import com.example.foodlens.networks.ProductAnalysisResponse
 import com.example.foodlens.networks.SuggestedAlternative
 import kotlinx.coroutines.launch
-import kotlin.math.PI
-import kotlin.math.cos
 import kotlin.math.min
-import kotlin.math.sin
 
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun AnalysisPage(productName: String, navHostController: NavHostController) {
     val context = LocalContext.current
@@ -116,12 +118,12 @@ fun AnalysisPage(productName: String, navHostController: NavHostController) {
                                 contentAlignment = Alignment.Center
                             ) {
                                 val img = response.productImage
-                                    Image(
-                                        painter = rememberAsyncImagePainter(img),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(160.dp),
-                                        contentScale = ContentScale.Fit
-                                    )
+                                Image(
+                                    painter = rememberAsyncImagePainter(img),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(160.dp),
+                                    contentScale = ContentScale.Fit
+                                )
 
                                 Text(
                                     text = productName,
@@ -133,7 +135,9 @@ fun AnalysisPage(productName: String, navHostController: NavHostController) {
                                     overflow = TextOverflow.Clip, // Optional: specifies how to handle overflow, Clip is default
                                     textAlign = TextAlign.Center
                                 )
-                                MeterArc(data.overall_analysis.rating, modifier = Modifier.scale(1.2f)) // Scale 1-5 to 1-10
+                                Text(text=data.overall_analysis.rating.toString(), fontSize = 30.sp)
+
+                                MeterArc(data.overall_analysis.rating.toFloat(), modifier = Modifier.scale(1.15f)) // Scale 1-5 to 1-10
                                 AboutColor()
                             }
                         }
@@ -187,77 +191,48 @@ fun AnalysisPage(productName: String, navHostController: NavHostController) {
 
 @Composable
 fun MeterArc(value: Float, modifier: Modifier = Modifier) {
-    // Animate the value for smooth transitions
-    val animatedValue by animateFloatAsState(targetValue = value)
-
-    // Determine the color based on animatedValue
-    val color = when {
-        animatedValue <= 2.5f -> colorResource(R.color.red)
-        animatedValue in 2.6f..5.0f -> colorResource(R.color.orange)
-        animatedValue in 5.1f..7.5f -> colorResource(R.color.yellow)
-        else -> colorResource(R.color.green)
-    }
-
-    // Use BoxWithConstraints to get the available size
-    BoxWithConstraints(
-        modifier = modifier.padding(20.dp),
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 20.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Calculate dimensions based on constraints
-        val width = constraints.maxWidth.toFloat()
-        val height = constraints.maxHeight.toFloat()
-        val minDim = min(width, height)
-        val strokeWidth = minDim * 0.07f
-        val radius = minDim / 2 - strokeWidth
-        val centerX = width / 2
-        val centerY = height / 2
-        val startAngle = -216f
-        val sweepAngle = 252f
-        val unitAngle = sweepAngle / 10 // 25.2f per unit
+        val sweepAngle = (252f / 5) * value.coerceIn(0.0f, 5.0f) // 70% of 360° scaled to 5 max value
 
-        // Draw the arcs and tick marks
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            // Background arc (full range)
+        val color = when {
+            value < 1.25 -> colorResource(R.color.red)
+            value in 1.25f..2.9f -> colorResource(R.color.orange)
+            value in 3.0f..3.9f -> colorResource(R.color.yellow)
+            value in  4.0..5.0 -> colorResource(R.color.green)
+            else -> colorResource(R.color.black)
+        }
+
+        Canvas(modifier = modifier.size(400.dp)) {
+            val strokeWidth = size.minDimension * 0.07f
+            val radius = min(size.width, size.height) / 2 - strokeWidth
+
             drawArc(
-                color = Color(209, 231, 223, 237), // Light background color
-                startAngle = startAngle,
+                color = Color(209, 231, 223, 237),
+                startAngle = -216f, // Start at -216° (left-top)
+                sweepAngle = 252f, // Full arc for reference
+                useCenter = false,
+                style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
+                size = Size(radius * 2, radius * 2),
+                topLeft = Offset((size.width - radius * 2) / 2, (size.height - radius * 2) / 2)
+            )
+
+            drawArc(
+                color = color,
+                startAngle = -216f,
                 sweepAngle = sweepAngle,
                 useCenter = false,
                 style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
                 size = Size(radius * 2, radius * 2),
-                topLeft = Offset(centerX - radius, centerY - radius)
+                topLeft = Offset((size.width - radius * 2) / 2, (size.height - radius * 2) / 2)
             )
-
-            // Foreground arc (animated)
-            val foregroundSweep = (sweepAngle / 10) * animatedValue.coerceIn(1.0f, 10.0f)
-            drawArc(
-                color = color,
-                startAngle = startAngle,
-                sweepAngle = foregroundSweep,
-                useCenter = false,
-                style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
-                size = Size(radius * 2, radius * 2),
-                topLeft = Offset(centerX - radius, centerY - radius)
-            )
-
-            // Tick marks
-            val tickLength = radius * 0.1f
-            for (i in 0..10) {
-                val tickAngle = startAngle + unitAngle * i
-                val tickAngleRad = (tickAngle * PI / 180).toFloat()
-                val x1 = centerX + radius * cos(tickAngleRad)
-                val y1 = centerY + radius * sin(tickAngleRad)
-                val x2 = centerX + (radius - tickLength) * cos(tickAngleRad)
-                val y2 = centerY + (radius - tickLength) * sin(tickAngleRad)
-                drawLine(
-                    color = Color.Gray,
-                    start = Offset(x1, y1),
-                    end = Offset(x2, y2),
-                    strokeWidth = 2f
-                )
-            }
         }
     }
+
 }
 
 
@@ -603,7 +578,7 @@ fun SuggestionsInAnalysis(suggestions: List<SuggestedAlternative>) {
 fun SuggestedItems(item: String, description: String) {
     Card(
         modifier = Modifier
-            .size(width = 350.dp, height = 180.dp) // Fixed width and height
+            .size(width = 300.dp, height = 150.dp) // Fixed width and height
             .padding(8.dp),
         colors = CardDefaults.cardColors(Color(0xFFF5F5F5)),
         elevation = CardDefaults.cardElevation(4.dp)
@@ -618,16 +593,15 @@ fun SuggestedItems(item: String, description: String) {
                 text = item,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
-                maxLines = 2, // Limit to one line
+                maxLines = 1, // Limit to one line
                 overflow = TextOverflow.Ellipsis // Truncate with ellipsis if too long
             )
             Text(
                 text = description,
                 fontSize = 12.sp,
-                maxLines = 6, // Limit to three lines (adjust as needed)
+                maxLines = 4, // Limit to three lines (adjust as needed)
                 overflow = TextOverflow.Ellipsis // Truncate with ellipsis if too long
             )
         }
     }
 }
-
