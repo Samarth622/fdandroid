@@ -25,12 +25,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 
 @Composable
 fun FloatingBottomNavigation(navHostController: NavHostController) {
-//    val items = listOf("home", "search", "suggestion", "profile",)
-//    val icons = listOf(Icons.Default.Home, Icons.Default.Search, Icons.Default.Notifications, Icons.Default.Person)
+    val items = listOf("home", "search", "suggestion", "profile",)
+    val icons = listOf(Icons.Default.Home, Icons.Default.Search, Icons.Default.Notifications, Icons.Default.Person)
 
 
-    val items = listOf("home", "suggestion", "profile",)
-    val icons = listOf(Icons.Default.Home, Icons.Default.Notifications, Icons.Default.Person)
+//    val items = listOf("home", "suggestion", "profile",)
+//    val icons = listOf(Icons.Default.Home, Icons.Default.Notifications, Icons.Default.Person)
     // Track current destination
     val currentDestination by navHostController.currentBackStackEntryAsState()
     val selectedItem = items.indexOf(currentDestination?.destination?.route)

@@ -92,21 +92,21 @@ fun AnalysisPageImage(analysisResponse: ImageProductAnalysisResponse, navHostCon
                 if (concerns.isNotEmpty()) {
                     WhatIsItUpTo("What Concerns Us", R.drawable.shocked)
                     concerns.forEach { nutrient ->
-                        NutritionItem(nutrient.nutrient, nutrient.rating.toFloat(), nutrient.explanation)
+                        NutritionItem(nutrient.nutrient_en, nutrient.rating.toFloat(), nutrient.explanation_en)
                     }
                 }
 
                 if (neutral.isNotEmpty()) {
                     WhatIsItUpTo("Neutral", R.drawable.neutral)
                     neutral.forEach { nutrient ->
-                        NutritionItem(nutrient.nutrient, nutrient.rating.toFloat(), nutrient.explanation)
+                        NutritionItem(nutrient.nutrient_en, nutrient.rating.toFloat(), nutrient.explanation_en)
                     }
                 }
 
                 if (likes.isNotEmpty()) {
                     WhatIsItUpTo("What We Like", R.drawable.smile)
                     likes.forEach { nutrient ->
-                        NutritionItem(nutrient.nutrient, nutrient.rating.toFloat(), nutrient.explanation)
+                        NutritionItem(nutrient.nutrient_en, nutrient.rating.toFloat(), nutrient.explanation_en)
                     }
                 }
             }
@@ -114,7 +114,7 @@ fun AnalysisPageImage(analysisResponse: ImageProductAnalysisResponse, navHostCon
                 SuggestionsInAnalysis(data.suggested_alternatives)
             }
             item {
-                Conclusion("Conclusion", data.overall_analysis.explanation)
+                Conclusion("Conclusion", data.overall_analysis.explanation_en)
             }
         }
     }

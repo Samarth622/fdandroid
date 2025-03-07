@@ -108,7 +108,7 @@ fun SuggestionPage(navHostController: NavHostController, viewModel: UserViewMode
             }
         }
 
-//        ChatBotScreen(viewModel)
+        ChatBotScreen(viewModel)
         FloatingBottomNavigation(navHostController)
     }
 }

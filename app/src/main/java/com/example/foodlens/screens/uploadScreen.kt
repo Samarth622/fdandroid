@@ -86,7 +86,7 @@ fun Heading() {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
-                Text(text = "Just in a click", fontSize = 20.sp)
+                Text(text = "Analyze the nutrients table just in a click", fontSize = 20.sp)
                 Image(
                     painter = painterResource(R.drawable.uploadfor),
                     contentDescription = "camera",

@@ -33,19 +33,23 @@ data class ProductsResponse(
 )
 
 data class NutrientAnalysis(
-    val nutrient: String,
+    val nutrient_en: String,
+    val nutrient_hi: String,
     val rating: Float, // 1-10
-    val explanation: String
+    val explanation_en: String,
+    val explanation_hi: String,
 )
 
 data class OverallAnalysis(
     val rating: Float, // 1-5
-    val explanation: String
+    val explanation_en: String,
+    val explanation_hi: String,
 )
 
 data class SuggestedAlternative(
     val name: String,
-    val reason: String
+    val reason_en: String,
+    val reason_hi: String,
 )
 
 data class ProductAnalysis(

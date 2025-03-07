@@ -18,9 +18,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -36,14 +34,11 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
@@ -157,21 +152,21 @@ fun AnalysisPage(productName: String, navHostController: NavHostController) {
                         if (concerns.isNotEmpty()) {
                             WhatIsItUpTo("What Concerns Us", R.drawable.shocked)
                             concerns.forEach { nutrient ->
-                                NutritionItem(nutrient.nutrient, nutrient.rating.toFloat(), nutrient.explanation)
+                                NutritionItem(nutrient.nutrient_en, nutrient.rating.toFloat(), nutrient.explanation_en)
                             }
                         }
 
                         if (neutral.isNotEmpty()) {
                             WhatIsItUpTo("Neutral", R.drawable.neutral)
                             neutral.forEach { nutrient ->
-                                NutritionItem(nutrient.nutrient, nutrient.rating.toFloat(), nutrient.explanation)
+                                NutritionItem(nutrient.nutrient_en, nutrient.rating.toFloat(), nutrient.explanation_en)
                             }
                         }
 
                         if (likes.isNotEmpty()) {
                             WhatIsItUpTo("What We Like", R.drawable.smile)
                             likes.forEach { nutrient ->
-                                NutritionItem(nutrient.nutrient, nutrient.rating.toFloat(), nutrient.explanation)
+                                NutritionItem(nutrient.nutrient_en, nutrient.rating.toFloat(), nutrient.explanation_en)
                             }
                         }
                     }
@@ -179,7 +174,7 @@ fun AnalysisPage(productName: String, navHostController: NavHostController) {
                         SuggestionsInAnalysis(data.suggested_alternatives)
                     }
                     item {
-                        Conclusion("Conclusion", data.overall_analysis.explanation)
+                        Conclusion("Conclusion", data.overall_analysis.explanation_en)
                     }
                 }
             } ?: Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -597,7 +592,7 @@ fun SuggestionsInAnalysis(suggestions: List<SuggestedAlternative>) {
                 modifier = Modifier.padding()
             ) {
                 items(suggestions) { suggestion ->
-                    SuggestedItems(suggestion.name, suggestion.reason)
+                    SuggestedItems(suggestion.name, suggestion.reason_en)
                 }
             }
         }
