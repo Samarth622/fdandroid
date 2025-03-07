@@ -1,6 +1,7 @@
 package com.example.foodlens.screens
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -23,6 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,6 +46,12 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun UploadScreen(navHostController: NavHostController, viewModel: UserViewModel) {
+    val context = LocalContext.current
+    val preferences = remember { context.getSharedPreferences("settings", Context.MODE_PRIVATE) }
+
+    // Load the saved language (set in GetStarted)
+    val selectedLanguage = preferences.getString("language", "English") ?: "English"
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -75,7 +83,7 @@ fun Heading() {
                 .fillMaxWidth()
         ) {
             Text(
-                text = "Upload & Analyze",
+                text = stringResource(R.string.upload_and_analyze),
                 style = MaterialTheme.typography.displayLarge.copy(fontWeight = FontWeight.Normal),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -86,7 +94,7 @@ fun Heading() {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
-                Text(text = "Analyze the nutrients table just in a click", fontSize = 20.sp)
+                Text(text = stringResource(R.string.analyze_nutrients_click), fontSize = 20.sp)
                 Image(
                     painter = painterResource(R.drawable.uploadfor),
                     contentDescription = "camera",
@@ -101,8 +109,8 @@ fun Heading() {
 fun ImageField() {
     Box(
         modifier = Modifier
-            .fillMaxSize().
-        padding(top = 190.dp, start = 48.dp, bottom = 30.dp ),
+            .fillMaxSize()
+            .padding(top = 190.dp, start = 48.dp, bottom = 30.dp),
     ) {
         Card(
             modifier = Modifier.size(300.dp),
@@ -113,7 +121,7 @@ fun ImageField() {
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "No Image")
+                Text(text = stringResource(R.string.no_image))
             }
         }
     }
@@ -138,7 +146,7 @@ fun UploadImageType(navHostController: NavHostController) {
                         Log.d("UploadScreen", "Image captured from camera: $uri")
                     } catch (e: Exception) {
                         Log.e("UploadScreen", "Error loading camera image: ${e.message}")
-                        Toast.makeText(context, "Error loading image: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.error_loading_image, Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -153,7 +161,7 @@ fun UploadImageType(navHostController: NavHostController) {
                     Log.d("UploadScreen", "Image selected from gallery: $uri")
                 } catch (e: Exception) {
                     Log.e("UploadScreen", "Error loading gallery image: ${e.message}")
-                    Toast.makeText(context, "Error loading image: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.error_loading_image, Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -203,17 +211,17 @@ fun UploadImageType(navHostController: NavHostController) {
                                     response.body()?.let { analysisResponse ->
                                         val analysisJson = Gson().toJson(analysisResponse)
                                         navHostController.navigate("imageAnalysisPage/$analysisJson")
-                                    } ?: Toast.makeText(context, "No analysis data received", Toast.LENGTH_SHORT).show()
+                                    } ?: Toast.makeText(context, R.string.no_analysis_data, Toast.LENGTH_SHORT).show()
                                 } else {
                                     Log.e("UploadScreen", "Analysis failed with code: ${response.code()}, message: ${response.message()}")
-                                    Toast.makeText(context, "Analysis failed: ${response.code()}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, R.string.analysis_failed, Toast.LENGTH_SHORT).show()
                                     if (response.code() == 401) {
                                         navHostController.navigate("loginPage") { popUpTo(0) { inclusive = true } }
                                     }
                                 }
                             } catch (e: Exception) {
                                 Log.e("UploadScreen", "Error during analysis: ${e.localizedMessage}")
-                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show()
                             } finally {
                                 isAnalyzing = false
                             }
@@ -227,7 +235,7 @@ fun UploadImageType(navHostController: NavHostController) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
                     } else {
                         Text(
-                            text = "Analyze",
+                            text = stringResource(R.string.analyze),
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 17.sp,
                             color = Color.White
@@ -267,7 +275,7 @@ fun UploadImageType(navHostController: NavHostController) {
                         contentDescription = "Take photo"
                     )
                 }
-                Text(text = "Take Photo", fontWeight = FontWeight.SemiBold)
+                Text(text = stringResource(R.string.take_photo), fontWeight = FontWeight.SemiBold)
             }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -288,7 +296,7 @@ fun UploadImageType(navHostController: NavHostController) {
                         contentDescription = "Gallery"
                     )
                 }
-                Text(text = "From Gallery", fontWeight = FontWeight.SemiBold)
+                Text(text = stringResource(R.string.from_gallery), fontWeight = FontWeight.SemiBold)
             }
         }
     }

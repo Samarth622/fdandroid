@@ -1,6 +1,7 @@
 package com.example.foodlens.screens
 
 import ChatBotScreen
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -47,6 +49,10 @@ fun SuggestionPage(navHostController: NavHostController, viewModel: UserViewMode
     val apiService: LoginApiService = RetrofitClient.getApiService(context)
     var recommendations by remember { mutableStateOf<FoodRecommendationsResponse?>(null) }
     var isLoading by remember { mutableStateOf(true) }
+    val preferences = remember { context.getSharedPreferences("settings", Context.MODE_PRIVATE) }
+
+    // Load the saved language (set in GetStarted)
+    val selectedLanguage = preferences.getString("language", "English") ?: "English"
 
     // Fetch recommendations on load
     LaunchedEffect(Unit) {
@@ -56,13 +62,13 @@ fun SuggestionPage(navHostController: NavHostController, viewModel: UserViewMode
                 if (response.isSuccessful) {
                     recommendations = response.body()
                 } else {
-                    Toast.makeText(context, "Failed to fetch recommendations: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.failed_fetch_recommendations, Toast.LENGTH_SHORT).show()
                     if (response.code() == 401) {
                         navHostController.navigate("loginPage") { popUpTo(0) { inclusive = true } }
                     }
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show()
             } finally {
                 isLoading = false
             }
@@ -93,12 +99,12 @@ fun SuggestionPage(navHostController: NavHostController, viewModel: UserViewMode
                     item {
                         Spacer(modifier = Modifier.height(10.dp))
                         recommendations?.let { response ->
-                            SuggestionContent(response.foodRecommendations)
+                            SuggestionContent(response.foodRecommendations, selectedLanguage)
                         } ?: Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("No recommendations available", color = Color.Gray, fontSize = 16.sp)
+                            Text(stringResource(R.string.no_recommendations_available), color = Color.Gray, fontSize = 16.sp)
                         }
                     }
                     item {
@@ -114,16 +120,16 @@ fun SuggestionPage(navHostController: NavHostController, viewModel: UserViewMode
 }
 
 @Composable
-fun SuggestionContent(recommendations: List<FoodRecommendation>) {
+fun SuggestionContent(recommendations: List<FoodRecommendation>, lan: String) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         recommendations.forEach { recommendation ->
             SuggestionItem(
-                item = recommendation.productName,
-                description = recommendation.benefits,
-                category = recommendation.category
+                item = if(lan == "en") recommendation.productName_en else recommendation.productName_hi,
+                description = if(lan == "en") recommendation.benefits_en else recommendation.benefits_hi,
+                category = if(lan == "en") recommendation.category_en else recommendation.category_hi
             )
         }
     }
@@ -166,12 +172,12 @@ fun SuggestionItem(item: String, description: String, category: String) {
 
                     Column {
                         Text(
-                            text = item,
+                            text = item, // From API, not localized
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 22.sp
                         )
                         Text(
-                            text = category,
+                            text = category, // From API, not localized
                             fontSize = 16.sp,
                             color = Color.Gray
                         )
@@ -188,7 +194,7 @@ fun SuggestionItem(item: String, description: String, category: String) {
 
             AnimatedVisibility(visible = expanded) {
                 Text(
-                    text = description,
+                    text = description, // From API, not localized
                     color = Color.Black,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -219,7 +225,7 @@ fun Title() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Need a healthy suggestion?",
+                text = stringResource(R.string.need_healthy_suggestion),
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 37.sp,
                 lineHeight = 42.sp,

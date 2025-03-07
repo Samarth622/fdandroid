@@ -1,16 +1,20 @@
 package com.example.foodlens.screens
 
 import ChatBotScreen
+import android.app.Activity
 import android.content.Context
+import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
@@ -29,6 +33,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -44,6 +49,7 @@ import com.example.foodlens.network.RetrofitClient
 import com.example.foodlens.networks.LoginApiService
 import com.example.foodlens.networks.UpdateProfileRequest
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @Composable
 fun ProfilePage(navHostController: NavHostController, viewModel: UserViewModel) {
@@ -64,6 +70,20 @@ fun ProfilePage(navHostController: NavHostController, viewModel: UserViewModel) 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val apiService: LoginApiService = RetrofitClient.getApiService(context)
+    val preferences = remember { context.getSharedPreferences("settings", Context.MODE_PRIVATE) }
+
+    // Load the saved language (set in GetStarted)
+    var selectedLanguage by remember { mutableStateOf(preferences.getString("language", "Hindi") ?: "English") }
+
+    // Function to update locale and recreate activity
+    fun updateLocale(language: String) {
+        val locale = if (language == "Hindi") Locale("hi") else Locale("en")
+        Locale.setDefault(locale)
+        val config = Configuration().apply { setLocale(locale) }
+        context.resources.updateConfiguration(config, context.resources.displayMetrics)
+        preferences.edit().putString("language", language).apply()
+        (context as? Activity)?.recreate() // Recreate activity to apply language change
+    }
 
     // Fetch profile data on load
     LaunchedEffect(Unit) {
@@ -85,13 +105,13 @@ fun ProfilePage(navHostController: NavHostController, viewModel: UserViewModel) 
                         bloodGroup = profile.bloodGroup ?: ""
                     }
                 } else {
-                    Toast.makeText(context, "Failed to fetch profile: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.failed_fetch_profile, Toast.LENGTH_SHORT).show()
                     if (response.code() == 401) {
                         navHostController.navigate("loginPage") { popUpTo(0) { inclusive = true } }
                     }
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show()
             } finally {
                 isLoading = false
             }
@@ -114,18 +134,18 @@ fun ProfilePage(navHostController: NavHostController, viewModel: UserViewModel) 
                     allergies = allergies.takeIf { it.isNotBlank() },
                     bloodGroup = bloodGroup.takeIf { it.isNotBlank() }
                 )
-                val response = apiService.updateUserProfile(request) // Use apiService instance
+                val response = apiService.updateUserProfile(request)
                 if (response.isSuccessful) {
-                    Toast.makeText(context, response.body()?.message ?: "Profile updated", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.profile_updated, Toast.LENGTH_SHORT).show()
                     isEditing = false
                 } else {
-                    Toast.makeText(context, "Failed to update profile: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.failed_update_profile, Toast.LENGTH_SHORT).show()
                     if (response.code() == 401) {
                         navHostController.navigate("loginPage") { popUpTo(0) { inclusive = true } }
                     }
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context,R.string.error,  Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -159,37 +179,44 @@ fun ProfilePage(navHostController: NavHostController, viewModel: UserViewModel) 
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+
                         Spacer(modifier = Modifier.height(10.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.SpaceEvenly,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
+
+                                LanguageDropdown(
+                                    selectedLanguage = selectedLanguage,
+                                    onLanguageSelected = { newLanguage ->
+                                        if (selectedLanguage != newLanguage) {
+                                            selectedLanguage = newLanguage
+                                            updateLocale(newLanguage)
+                                        }
+                                    }
+                                )
                                 Text(
-                                    text = "Profile",
+                                    text = stringResource(R.string.profile),
                                     color = Color(54, 54, 54, 191),
                                     style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.SemiBold)
                                 )
                                 LogoutButton(navHostController, context)
-                            }
+
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        ProfileField("Name", name, { name = it }, isEditing, Icons.Default.Person)
-                        ProfileField("Mobile No", mobile, { mobile = it }, isEditing, Icons.Default.Phone)
-                        ProfileField("Gender", gender, { gender = it }, isEditing, Icons.Default.Lock)
-                        ProfileField("Email", email, { email = it }, isEditing, Icons.Default.Email)
-                        ProfileField("Age", age, { age = it }, isEditing, Icons.Default.Info)
-                        ProfileField("Height(cm)", height, { height = it }, isEditing, Icons.Default.Info)
-                        ProfileField("Weight(kg)", weight, { weight = it }, isEditing, Icons.Default.Info)
-                        ProfileField("Medical History", medicalHistory, { medicalHistory = it }, isEditing, Icons.Default.Info)
-                        ProfileField("Allergies", allergies, { allergies = it }, isEditing, Icons.Default.Warning)
-                        ProfileField("Blood Group", bloodGroup, { bloodGroup = it }, isEditing, Icons.Default.Info)
+                        ProfileField(stringResource(R.string.name), name, { name = it }, isEditing, Icons.Default.Person)
+                        ProfileField(stringResource(R.string.mobile_no), mobile, { mobile = it }, isEditing, Icons.Default.Phone)
+                        ProfileField(stringResource(R.string.gender), gender, { gender = it }, isEditing, Icons.Default.Lock)
+                        ProfileField(stringResource(R.string.email), email, { email = it }, isEditing, Icons.Default.Email)
+                        ProfileField(stringResource(R.string.age), age, { age = it }, isEditing, Icons.Default.Info)
+                        ProfileField(stringResource(R.string.height_cm), height, { height = it }, isEditing, Icons.Default.Info)
+                        ProfileField(stringResource(R.string.weight_kg), weight, { weight = it }, isEditing, Icons.Default.Info)
+                        ProfileField(stringResource(R.string.medical_history), medicalHistory, { medicalHistory = it }, isEditing, Icons.Default.Info)
+                        ProfileField(stringResource(R.string.allergies), allergies, { allergies = it }, isEditing, Icons.Default.Warning)
+                        ProfileField(stringResource(R.string.blood_group), bloodGroup, { bloodGroup = it }, isEditing, Icons.Default.Info)
 
                         Spacer(modifier = Modifier.height(15.dp))
 
@@ -197,12 +224,12 @@ fun ProfilePage(navHostController: NavHostController, viewModel: UserViewModel) 
                             onClick = { if (isEditing) saveProfile() else isEditing = true },
                             modifier = Modifier
                                 .fillMaxWidth(0.4f)
-                                .padding(bottom = 25.dp)
+                                .padding(top = 25.dp)
                                 .clip(RoundedCornerShape(12.dp)),
                             colors = if (!isEditing) ButtonDefaults.buttonColors(Color.Gray) else ButtonDefaults.buttonColors(Color.Black)
                         ) {
                             Text(
-                                text = if (isEditing) "Save" else "Edit",
+                                text = stringResource(if (isEditing) R.string.save else R.string.edit),
                                 color = Color.White
                             )
                         }
@@ -213,7 +240,7 @@ fun ProfilePage(navHostController: NavHostController, viewModel: UserViewModel) 
             }
         }
 
-        ChatBotScreen(viewModel = viewModel )
+        ChatBotScreen(viewModel = viewModel)
         FloatingBottomNavigation(navHostController)
     }
 }
@@ -246,7 +273,7 @@ fun ProfileField(
                     unfocusedBorderColor = Color.Black
                 ),
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = if (label == "Age" || label == "Height(cm)" || label == "Weight(kg)") KeyboardType.Number else KeyboardType.Text
+                    keyboardType = if (label == stringResource(R.string.age) || label == stringResource(R.string.height_cm) || label == stringResource(R.string.weight_kg)) KeyboardType.Number else KeyboardType.Text
                 )
             )
         } else {
@@ -277,11 +304,11 @@ fun LogoutButton(navHostController: NavHostController, context: Context) {
 
     IconButton(
         onClick = { showLogoutDialog = true },
-        modifier = Modifier.padding(start = 290.dp)
+        modifier = Modifier.padding()
     ) {
         Icon(
             painter = painterResource(R.drawable.logout),
-            contentDescription = "Logout Button",
+            contentDescription = stringResource(R.string.logout),
             tint = Color.Gray,
             modifier = Modifier.scale(1.2f)
         )
@@ -291,29 +318,26 @@ fun LogoutButton(navHostController: NavHostController, context: Context) {
         AlertDialog(
             containerColor = Color.White,
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Logout", color = Color(1, 1, 1)) },
-            text = { Text("Are you sure you want to logout?", color = Color(1, 1, 1)) },
+            title = { Text(stringResource(R.string.logout), color = Color(1, 1, 1)) },
+            text = { Text(stringResource(R.string.are_you_sure_logout), color = Color(1, 1, 1)) },
             confirmButton = {
                 Button(
                     colors = ButtonDefaults.buttonColors(colorResource(R.color.lightGreen)),
                     onClick = {
                         showLogoutDialog = false
-                        // Clear SharedPreferences data (token and login status)
                         val sharedPrefs = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
                         with(sharedPrefs.edit()) {
                             putBoolean("isLoggedIn", false)
-                            remove("AUTH_TOKEN") // Remove the token
+                            remove("AUTH_TOKEN")
                             apply()
                         }
-                        // Optionally clear RetrofitClient's in-memory token if set
                         RetrofitClient.setToken(null)
-                        // Navigate to login page
                         navHostController.navigate("loginPage") {
                             popUpTo(0) { inclusive = true }
                         }
                     }
                 ) {
-                    Text("Yes")
+                    Text(stringResource(R.string.yes))
                 }
             },
             dismissButton = {
@@ -321,9 +345,71 @@ fun LogoutButton(navHostController: NavHostController, context: Context) {
                     colors = ButtonDefaults.buttonColors(colorResource(R.color.lightGreen)),
                     onClick = { showLogoutDialog = false }
                 ) {
-                    Text("No")
+                    Text(stringResource(R.string.no))
                 }
             }
         )
+    }
+}
+
+@Composable
+fun LanguageDropdown(
+    selectedLanguage: String,
+    onLanguageSelected: (String) -> Unit
+) {
+    val languageOptions = listOf(stringResource(R.string.english), stringResource(R.string.hindi))
+    var expanded by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .width(90.dp) // Wider like GetStarted
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .background(Color.White)
+                .padding(8.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .clickable { expanded = true },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = selectedLanguage,
+                    color = Color.Black,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "Dropdown Arrow",
+                    tint = Color.Black
+                )
+            }
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier
+                    .background(Color.White)
+                    .width(200.dp)
+            ) {
+                languageOptions.forEach { language ->
+                    DropdownMenuItem(
+                        text = { Text(language, color = Color.Black, fontSize = 18.sp) },
+                        onClick = {
+                            onLanguageSelected(language)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.example.foodlens.screens
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -38,6 +39,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -63,6 +65,10 @@ fun AnalysisPage(productName: String, navHostController: NavHostController) {
     val apiService: LoginApiService = RetrofitClient.getApiService(context)
     var analysisResponse by remember { mutableStateOf<ProductAnalysisResponse?>(null) }
     var isLoading by remember { mutableStateOf(true) }
+    val preferences = remember { context.getSharedPreferences("settings", Context.MODE_PRIVATE) }
+
+    // Load the saved language (set in GetStarted or ProfilePage)
+    val selectedLanguage by remember { mutableStateOf(preferences.getString("language", "English") ?: "English") }
 
     LaunchedEffect(productName) {
         coroutineScope.launch {
@@ -97,6 +103,7 @@ fun AnalysisPage(productName: String, navHostController: NavHostController) {
         } else {
             analysisResponse?.let { response ->
                 val data = response.analysis
+                val isHindi = selectedLanguage == "Hindi"
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -144,7 +151,7 @@ fun AnalysisPage(productName: String, navHostController: NavHostController) {
                     }
                     item{
                         Row (modifier = Modifier.fillMaxWidth()){
-                            Text(text="*Disclaimer: This analysis is based on our study, for a proper explanation refer to a dietitian.", fontStyle = FontStyle.Italic, fontSize = 14.sp)
+                            Text(text=stringResource(R.string.disclaimer), fontStyle = FontStyle.Italic, fontSize = 14.sp)
                         }
                     }
                     item {
@@ -154,35 +161,47 @@ fun AnalysisPage(productName: String, navHostController: NavHostController) {
                         val likes = data.nutrient_analysis.filter { it.rating > 7 }
 
                         if (concerns.isNotEmpty()) {
-                            WhatIsItUpTo("What Concerns Us", R.drawable.shocked)
+                            WhatIsItUpTo(stringResource(R.string.what_concerns_us), R.drawable.shocked)
                             concerns.forEach { nutrient ->
-                                NutritionItem(nutrient.nutrient_en, nutrient.rating.toFloat(), nutrient.explanation_en)
+                                NutritionItem(
+                                    item = if (isHindi) nutrient.nutrient_hi else nutrient.nutrient_en,
+                                    rating = nutrient.rating.toFloat(),
+                                    description = if (isHindi) nutrient.explanation_hi else nutrient.explanation_en
+                                )
                             }
                         }
 
                         if (neutral.isNotEmpty()) {
-                            WhatIsItUpTo("Neutral", R.drawable.neutral)
+                            WhatIsItUpTo(stringResource(R.string.neutral), R.drawable.neutral)
                             neutral.forEach { nutrient ->
-                                NutritionItem(nutrient.nutrient_en, nutrient.rating.toFloat(), nutrient.explanation_en)
+                                NutritionItem(
+                                    item = if (isHindi) nutrient.nutrient_hi else nutrient.nutrient_en,
+                                    rating = nutrient.rating.toFloat(),
+                                    description = if (isHindi) nutrient.explanation_hi else nutrient.explanation_en
+                                )
                             }
                         }
 
                         if (likes.isNotEmpty()) {
-                            WhatIsItUpTo("What We Like", R.drawable.smile)
+                            WhatIsItUpTo(stringResource(R.string.what_we_like), R.drawable.smile)
                             likes.forEach { nutrient ->
-                                NutritionItem(nutrient.nutrient_en, nutrient.rating.toFloat(), nutrient.explanation_en)
+                                NutritionItem(
+                                    item = if (isHindi) nutrient.nutrient_hi else nutrient.nutrient_en,
+                                    rating = nutrient.rating.toFloat(),
+                                    description = if (isHindi) nutrient.explanation_hi else nutrient.explanation_en
+                                )
                             }
                         }
                     }
                     item {
-                        SuggestionsInAnalysis(data.suggested_alternatives)
+                        SuggestionsInAnalysis(data.suggested_alternatives, selectedLanguage)
                     }
                     item {
-                        Conclusion("Conclusion", data.overall_analysis.explanation_en)
+                        Conclusion(stringResource(R.string.conclusion), description = if (isHindi) data.overall_analysis.explanation_hi else data.overall_analysis.explanation_en)
                     }
                 }
             } ?: Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No analysis data available", color = Color.Gray, fontSize = 16.sp)
+                Text(stringResource(R.string.no_analysis_available), color = Color.Gray, fontSize = 16.sp)
             }
         }
     }
@@ -250,12 +269,10 @@ fun AboutColor() {
             verticalAlignment = Alignment.CenterVertically
         )
         {
-            AboutColorItem("Safe", colorResource(R.color.green))
-            AboutColorItem("Moderate", colorResource(R.color.yellow))
-            AboutColorItem("Risky", colorResource(R.color.orange))
-            AboutColorItem("Avoid", colorResource(R.color.red))
-
-
+            AboutColorItem(stringResource(R.string.safe), colorResource(R.color.green))
+            AboutColorItem(stringResource(R.string.moderate), colorResource(R.color.yellow))
+            AboutColorItem(stringResource(R.string.risky), colorResource(R.color.orange))
+            AboutColorItem(stringResource(R.string.avoid), colorResource(R.color.red))
         }
     }
 
@@ -548,7 +565,7 @@ fun Conclusion(item: String, description: String) {
 }
 
 @Composable
-fun SuggestionsInAnalysis(suggestions: List<SuggestedAlternative>) {
+fun SuggestionsInAnalysis(suggestions: List<SuggestedAlternative>, lan: String) {
     Card(
         modifier = Modifier
             .wrapContentSize()
@@ -557,7 +574,7 @@ fun SuggestionsInAnalysis(suggestions: List<SuggestedAlternative>) {
     ) {
         Column {
             Text(
-                text = "Suggested Food Items",
+                text = stringResource(R.string.suggested_food_items),
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 24.sp,
                 modifier = Modifier.padding(10.dp)
@@ -567,7 +584,7 @@ fun SuggestionsInAnalysis(suggestions: List<SuggestedAlternative>) {
                 modifier = Modifier.padding()
             ) {
                 items(suggestions) { suggestion ->
-                    SuggestedItems(suggestion.name, suggestion.reason_en)
+                    SuggestedItems(suggestion.name, if(lan == "Hindi") suggestion.reason_hi else suggestion.reason_en)
                 }
             }
         }

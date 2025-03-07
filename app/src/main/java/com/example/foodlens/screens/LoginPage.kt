@@ -4,41 +4,15 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,23 +21,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.foodlens.R
-import com.example.foodlens.UserViewModel
-import com.example.foodlens.network.RetrofitClient
 import com.example.foodlens.networks.LoginApiService
 import com.example.foodlens.networks.LoginRequest
-import com.google.firebase.firestore.FirebaseFirestore
+import com.example.foodlens.network.RetrofitClient
 import kotlinx.coroutines.launch
-
 
 @Composable
 fun LoginPage(navHostController: NavHostController) {
@@ -74,6 +44,10 @@ fun LoginPage(navHostController: NavHostController) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val apiService: LoginApiService = RetrofitClient.getApiService(context)
+    val preferences = remember { context.getSharedPreferences("settings", Context.MODE_PRIVATE) }
+
+    // Load the saved language (set in GetStarted)
+    val selectedLanguage = preferences.getString("language", "English") ?: "English"
 
     Image(
         painter = painterResource(R.drawable.background2),
@@ -89,13 +63,13 @@ fun LoginPage(navHostController: NavHostController) {
         Spacer(modifier = Modifier.height(160.dp))
 
         Text(
-            text = "Welcome Back",
+            text = stringResource(R.string.welcome_back),
             color = Color(70, 66, 66, 193),
             style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Normal),
         )
 
         Text(
-            text = "Sign in to continue",
+            text = stringResource(R.string.sign_in_to_continue),
             color = Color(70, 66, 66, 79),
             fontSize = 20.sp,
             textAlign = TextAlign.Start
@@ -106,7 +80,7 @@ fun LoginPage(navHostController: NavHostController) {
         TransparentTextField(
             value = mobileNo,
             onValueChange = { mobileNo = it },
-            placeholder = "Mobile No.",
+            placeholder = stringResource(R.string.mobile_no),
             isNumberKeyboard = true,
             icon = Icons.Default.AccountBox
         )
@@ -114,7 +88,7 @@ fun LoginPage(navHostController: NavHostController) {
         TransparentTextField(
             value = password,
             onValueChange = { password = it },
-            placeholder = "Password",
+            placeholder = stringResource(R.string.password),
             icon = Icons.Default.Lock
         )
 
@@ -129,7 +103,7 @@ fun LoginPage(navHostController: NavHostController) {
             colors = ButtonDefaults.buttonColors(Color.Transparent),
             onClick = {
                 if (mobileNo.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(context, "Incomplete credentials", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.incomplete_credentials, Toast.LENGTH_SHORT).show()
                 } else {
                     isLoading = true
                     coroutineScope.launch {
@@ -148,7 +122,7 @@ fun LoginPage(navHostController: NavHostController) {
                                         context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
                                             .edit().putBoolean("isLoggedIn", true).apply()
 
-                                        Toast.makeText(context, body.message ?: "Login Successful!", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, body.message ?: "login successful", Toast.LENGTH_SHORT).show()
                                         navHostController.navigate("home") {
                                             popUpTo(0) { inclusive = true }
                                             launchSingleTop = true
@@ -156,7 +130,7 @@ fun LoginPage(navHostController: NavHostController) {
                                     }
                                 }
                             } else {
-                                Toast.makeText(context, response.errorBody()?.string() ?: "Login failed", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, response.errorBody()?.string() ?: "login failed", Toast.LENGTH_SHORT).show()
                             }
                         } catch (e: Exception) {
                             Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -167,13 +141,20 @@ fun LoginPage(navHostController: NavHostController) {
                 }
             }
         ) {
-            Text(text = "Login", fontSize = 19.sp, color = Color.White)
+            Text(
+                text = stringResource(R.string.login),
+                fontSize = 19.sp,
+                color = Color.White
+            )
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
         TextButton(onClick = { /* TODO: Handle forgot password */ }) {
-            Text(text = "Forget Password?", color = colorResource(R.color.green))
+            Text(
+                text = stringResource(R.string.forget_password),
+                color = colorResource(R.color.green)
+            )
         }
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -182,7 +163,10 @@ fun LoginPage(navHostController: NavHostController) {
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "Don't have an account yet?", color = Color(1, 1, 1, 122))
+            Text(
+                text = stringResource(R.string.do_not_have_account),
+                color = Color(1, 1, 1, 122)
+            )
 
             TextButton(
                 contentPadding = PaddingValues(0.dp),
@@ -192,7 +176,10 @@ fun LoginPage(navHostController: NavHostController) {
                     }
                 }
             ) {
-                Text(text = "Register", color = colorResource(R.color.green))
+                Text(
+                    text = stringResource(R.string.register),
+                    color = colorResource(R.color.green)
+                )
             }
         }
     }
@@ -205,46 +192,6 @@ fun LoginPage(navHostController: NavHostController) {
             CircularProgressIndicator()
         }
     }
-}
-
-fun loginUser(
-    firestore: FirebaseFirestore,
-    context: Context,
-    mobileNo: String,
-    password: String,
-    navHostController: NavHostController,
-    onComplete: () -> Unit
-) {
-    firestore.collection("Users")
-        .document(mobileNo)
-        .get()
-        .addOnSuccessListener { document ->
-            if (document.exists()) {
-                val storedPassword = document.getString("password")
-                if (storedPassword == password) {
-                    saveCurrentUser(context, mobileNo)
-
-                    context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
-                        .edit().putBoolean("isLoggedIn", true).apply()
-
-                    Toast.makeText(context, "Login Successful!", Toast.LENGTH_SHORT).show()
-
-                    navHostController.navigate("home") {
-                        popUpTo(0) // Clears back stack
-                        launchSingleTop = true
-                    }
-                } else {
-                    Toast.makeText(context, "Wrong password", Toast.LENGTH_SHORT).show()
-                }
-            } else {
-                Toast.makeText(context, "User not found", Toast.LENGTH_SHORT).show()
-            }
-            onComplete()
-        }
-        .addOnFailureListener {
-            Toast.makeText(context, "Login failed. Try again.", Toast.LENGTH_SHORT).show()
-            onComplete()
-        }
 }
 
 fun saveToken(context: Context, token: String) {
@@ -310,5 +257,3 @@ fun TransparentTextField(
         )
     }
 }
-
-

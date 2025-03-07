@@ -16,6 +16,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -29,13 +30,19 @@ fun GetStarted(navHostController: NavHostController) {
     val context = LocalContext.current
     val preferences = remember { context.getSharedPreferences("settings", Context.MODE_PRIVATE) }
 
+    if (!preferences.contains("language")) {
+        preferences.edit().putString("language", "English").apply()
+    }
+
     // Load initial language from SharedPreferences
     var selectedLanguage by remember {
         mutableStateOf(preferences.getString("language", "English") ?: "English")
     }
+
     var expanded by remember { mutableStateOf(false) }
     val languages = listOf("English", "Hindi")
 
+    // Function to update locale
     val updateLocale: (String) -> Unit = { language ->
         val locale = when (language) {
             "Hindi" -> Locale("hi")
@@ -73,14 +80,14 @@ fun GetStarted(navHostController: NavHostController) {
             Spacer(modifier = Modifier.height(50.dp))
 
             Text(
-                text = "Eat Healthy",
+                text = stringResource(R.string.eat_healthy), // Use string resource
                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 15.dp),
                 color = Color(70, 66, 66, 193),
                 style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Normal),
             )
 
             Text(
-                text = "Maintaining good health should be the primary focus of everyone",
+                text = stringResource(R.string.health_focus), // Use string resource
                 modifier = Modifier.padding(10.dp),
                 color = Color(70, 66, 66, 133),
                 fontSize = 20.sp,
@@ -101,7 +108,7 @@ fun GetStarted(navHostController: NavHostController) {
                 }
             ) {
                 Text(
-                    text = "Get Started",
+                    text = stringResource(R.string.get_started), // Use string resource
                     color = Color.White,
                     fontSize = 19.sp
                 )
@@ -114,7 +121,6 @@ fun GetStarted(navHostController: NavHostController) {
                 .align(Alignment.TopEnd)
                 .padding(top = 38.dp, bottom = 16.dp, start = 16.dp, end = 20.dp)
         ) {
-
             Button(
                 onClick = { expanded = true },
                 colors = ButtonDefaults.buttonColors(Color.White)
@@ -138,7 +144,7 @@ fun GetStarted(navHostController: NavHostController) {
                             updateLocale(language)
                             preferences.edit().putString("language", language).apply()
                             expanded = false
-                            (context as? Activity)?.recreate()
+                            (context as? Activity)?.recreate() // Recreate activity to refresh UI
                         }
                     )
                 }

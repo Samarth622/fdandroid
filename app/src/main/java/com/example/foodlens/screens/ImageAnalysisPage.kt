@@ -1,5 +1,6 @@
 package com.example.foodlens.screens
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -7,10 +8,15 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -24,6 +30,13 @@ import com.example.foodlens.networks.ImageProductAnalysisResponse
 @Composable
 fun AnalysisPageImage(analysisResponse: ImageProductAnalysisResponse, navHostController: NavHostController) {
     val data  = analysisResponse.analysis
+    val context = LocalContext.current
+    val preferences = remember { context.getSharedPreferences("settings", Context.MODE_PRIVATE) }
+
+    // Load the saved language (set in GetStarted or ProfilePage)
+    val selectedLanguage by remember { mutableStateOf(preferences.getString("language", "English") ?: "English") }
+
+    val isHindi = selectedLanguage == "Hindi"
 
     if (data == null) {
         // Display an error message or a loading state
@@ -65,7 +78,7 @@ fun AnalysisPageImage(analysisResponse: ImageProductAnalysisResponse, navHostCon
                             )
 
                         Text(
-                            text = "Analyzed Image",
+                            text = stringResource(R.string.analyzed_image),
                             fontSize = 22.sp,
                             modifier = Modifier.padding(top = 210.dp),
                             color = Color(54, 54, 54, 191),
@@ -81,7 +94,7 @@ fun AnalysisPageImage(analysisResponse: ImageProductAnalysisResponse, navHostCon
             }
             item{
                 Row (modifier = Modifier.fillMaxWidth()){
-                    Text(text="*Disclaimer: This analysis is based on our study, for a proper explanation refer to a dietitian.", fontStyle = FontStyle.Italic, fontSize = 14.sp)
+                    Text(text= stringResource(R.string.disclaimer), fontStyle = FontStyle.Italic, fontSize = 14.sp)
                 }
             }
             item {
@@ -90,31 +103,43 @@ fun AnalysisPageImage(analysisResponse: ImageProductAnalysisResponse, navHostCon
                 val likes = data.nutrient_analysis.filter { it.rating > 7.0 }
 
                 if (concerns.isNotEmpty()) {
-                    WhatIsItUpTo("What Concerns Us", R.drawable.shocked)
+                    WhatIsItUpTo(stringResource(R.string.what_concerns_us), R.drawable.shocked)
                     concerns.forEach { nutrient ->
-                        NutritionItem(nutrient.nutrient_en, nutrient.rating.toFloat(), nutrient.explanation_en)
+                        NutritionItem(
+                            item = if (isHindi) nutrient.nutrient_hi else nutrient.nutrient_en,
+                            rating = nutrient.rating.toFloat(),
+                            description = if (isHindi) nutrient.explanation_hi else nutrient.explanation_en
+                        )
                     }
                 }
 
                 if (neutral.isNotEmpty()) {
-                    WhatIsItUpTo("Neutral", R.drawable.neutral)
+                    WhatIsItUpTo(stringResource(R.string.neutral), R.drawable.neutral)
                     neutral.forEach { nutrient ->
-                        NutritionItem(nutrient.nutrient_en, nutrient.rating.toFloat(), nutrient.explanation_en)
+                        NutritionItem(
+                            item = if (isHindi) nutrient.nutrient_hi else nutrient.nutrient_en,
+                            rating = nutrient.rating.toFloat(),
+                            description = if (isHindi) nutrient.explanation_hi else nutrient.explanation_en
+                        )
                     }
                 }
 
                 if (likes.isNotEmpty()) {
-                    WhatIsItUpTo("What We Like", R.drawable.smile)
+                    WhatIsItUpTo(stringResource(R.string.what_we_like), R.drawable.smile)
                     likes.forEach { nutrient ->
-                        NutritionItem(nutrient.nutrient_en, nutrient.rating.toFloat(), nutrient.explanation_en)
+                        NutritionItem(
+                            item = if (isHindi) nutrient.nutrient_hi else nutrient.nutrient_en,
+                            rating = nutrient.rating.toFloat(),
+                            description = if (isHindi) nutrient.explanation_hi else nutrient.explanation_en
+                        )
                     }
                 }
             }
             item {
-                SuggestionsInAnalysis(data.suggested_alternatives)
+                SuggestionsInAnalysis(data.suggested_alternatives, selectedLanguage)
             }
             item {
-                Conclusion("Conclusion", data.overall_analysis.explanation_en)
+                Conclusion(stringResource(R.string.conclusion), description = if (isHindi) data.overall_analysis.explanation_hi else data.overall_analysis.explanation_en)
             }
         }
     }

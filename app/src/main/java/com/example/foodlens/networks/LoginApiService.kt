@@ -81,9 +81,12 @@ data class UserProfile(
 )
 
 data class FoodRecommendation(
-    val productName: String,
-    val benefits: String,
-    val category: String
+    val productName_en: String,
+    val productName_hi: String,
+    val benefits_en: String,
+    val benefits_hi: String,
+    val category_en: String,
+    val category_hi: String
 )
 
 data class FoodRecommendationsResponse(
