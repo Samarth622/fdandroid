@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -214,7 +213,7 @@ fun ProfilePage(navHostController: NavHostController, viewModel: UserViewModel) 
             }
         }
 
-        ChatBotScreen(viewModel = viewModel )
+//        ChatBotScreen(viewModel = viewModel )
         FloatingBottomNavigation(navHostController)
     }
 }

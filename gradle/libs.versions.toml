@@ -1,5 +1,6 @@
 [versions]
 agp = "8.7.3"
+androidCropper = "1.4.0"
 androidxActivityActivityCompose = "1.8.0"
 coilCompose = "2.2.2"
 composeBomVersion = "2024.02.00"
@@ -28,6 +29,7 @@ browser = "1.8.0"
 webkit = "1.12.1"
 
 [libraries]
+android-cropper = { module = "com.canhub.cropper:android-cropper", version.ref = "androidCropper" }
 androidx-activity-activity-compose-v180-x2 = { module = "androidx.activity:activity-compose", version.ref = "androidxActivityActivityCompose" }
 androidx-compose-bom-v20240200 = { module = "androidx.compose:compose-bom", version.ref = "composeBomVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

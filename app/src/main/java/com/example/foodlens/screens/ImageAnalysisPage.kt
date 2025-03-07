@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -76,6 +77,11 @@ fun AnalysisPageImage(analysisResponse: ImageProductAnalysisResponse, navHostCon
                         MeterArc(data.overall_analysis.rating.toFloat() * 2, modifier = Modifier.scale(1.15f))
                         AboutColor()
                     }
+                }
+            }
+            item{
+                Row (modifier = Modifier.fillMaxWidth()){
+                    Text(text="*Disclaimer: This analysis is based on our study, for a proper explanation refer to a dietitian.", fontStyle = FontStyle.Italic, fontSize = 14.sp)
                 }
             }
             item {

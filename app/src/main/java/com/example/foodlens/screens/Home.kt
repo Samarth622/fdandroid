@@ -163,7 +163,7 @@ fun Home(navHostController: NavHostController, viewModel: UserViewModel) {
 
         }
 
-        ChatBotScreen(viewModel)
+//        ChatBotScreen(viewModel)
 
         FloatingBottomNavigation(navHostController)
 
