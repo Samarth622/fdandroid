@@ -72,16 +72,20 @@ fun ProfilePage(navHostController: NavHostController, viewModel: UserViewModel) 
     val apiService: LoginApiService = RetrofitClient.getApiService(context)
     val preferences = remember { context.getSharedPreferences("settings", Context.MODE_PRIVATE) }
 
-    // Load the saved language (set in GetStarted)
-    var selectedLanguage by remember { mutableStateOf(preferences.getString("language", "Hindi") ?: "English") }
+    // Load the saved language, defaulting to "English" if not set
+    var selectedLanguage by remember { mutableStateOf(preferences.getString("language", "English") ?: "English") }
 
     // Function to update locale and recreate activity
     fun updateLocale(language: String) {
         val locale = if (language == "Hindi") Locale("hi") else Locale("en")
+        val languageCode = if (language == "Hindi") "hi" else "en"
         Locale.setDefault(locale)
         val config = Configuration().apply { setLocale(locale) }
         context.resources.updateConfiguration(config, context.resources.displayMetrics)
-        preferences.edit().putString("language", language).apply()
+        preferences.edit()
+            .putString("language", language) // Store the display name (e.g., "English" or "Hindi")
+            .putString("language_code", languageCode) // Store the code for consistency
+            .apply()
         (context as? Activity)?.recreate() // Recreate activity to apply language change
     }
 
@@ -105,7 +109,7 @@ fun ProfilePage(navHostController: NavHostController, viewModel: UserViewModel) 
                         bloodGroup = profile.bloodGroup ?: ""
                     }
                 } else {
-                    Toast.makeText(context, R.string.failed_fetch_profile, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context,R.string.failed_fetch_profile, Toast.LENGTH_SHORT).show()
                     if (response.code() == 401) {
                         navHostController.navigate("loginPage") { popUpTo(0) { inclusive = true } }
                     }
@@ -145,14 +149,13 @@ fun ProfilePage(navHostController: NavHostController, viewModel: UserViewModel) 
                     }
                 }
             } catch (e: Exception) {
-                Toast.makeText(context,R.string.error,  Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Image(
@@ -179,30 +182,27 @@ fun ProfilePage(navHostController: NavHostController, viewModel: UserViewModel) 
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-
                         Spacer(modifier = Modifier.height(10.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceEvenly,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-
-                                LanguageDropdown(
-                                    selectedLanguage = selectedLanguage,
-                                    onLanguageSelected = { newLanguage ->
-                                        if (selectedLanguage != newLanguage) {
-                                            selectedLanguage = newLanguage
-                                            updateLocale(newLanguage)
-                                        }
+                            LanguageDropdown(
+                                selectedLanguage = selectedLanguage,
+                                onLanguageSelected = { newLanguage ->
+                                    if (selectedLanguage != newLanguage) {
+                                        selectedLanguage = newLanguage
+                                        updateLocale(newLanguage)
                                     }
-                                )
-                                Text(
-                                    text = stringResource(R.string.profile),
-                                    color = Color(54, 54, 54, 191),
-                                    style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.SemiBold)
-                                )
-                                LogoutButton(navHostController, context)
-
+                                }
+                            )
+                            Text(
+                                text = stringResource(R.string.profile),
+                                color = Color(54, 54, 54, 191),
+                                style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.SemiBold)
+                            )
+                            LogoutButton(navHostController, context)
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -318,8 +318,8 @@ fun LogoutButton(navHostController: NavHostController, context: Context) {
         AlertDialog(
             containerColor = Color.White,
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text(stringResource(R.string.logout), color = Color(1, 1, 1)) },
-            text = { Text(stringResource(R.string.are_you_sure_logout), color = Color(1, 1, 1)) },
+            title = { Text(stringResource(R.string.logout), color = Color.Black) },
+            text = { Text(stringResource(R.string.are_you_sure_logout), color = Color.Black) },
             confirmButton = {
                 Button(
                     colors = ButtonDefaults.buttonColors(colorResource(R.color.lightGreen)),
@@ -362,7 +362,7 @@ fun LanguageDropdown(
 
     Card(
         modifier = Modifier
-            .width(90.dp) // Wider like GetStarted
+            .width(120.dp) // Increased width to ensure space for text and icon
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White),
         elevation = CardDefaults.cardElevation(4.dp)
@@ -375,8 +375,8 @@ fun LanguageDropdown(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
-                    .clickable { expanded = true },
+                    .clickable { expanded = true }
+                    .padding(horizontal = 8.dp, vertical = 4.dp), // Adjusted padding
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -384,12 +384,14 @@ fun LanguageDropdown(
                     text = selectedLanguage,
                     color = Color.Black,
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.weight(1f, fill = false) // Prevent text from pushing icon out
                 )
                 Icon(
                     imageVector = Icons.Default.ArrowDropDown,
                     contentDescription = "Dropdown Arrow",
-                    tint = Color.Black
+                    tint = Color.Black,
+                    modifier = Modifier.size(24.dp) // Fixed size for consistency
                 )
             }
 

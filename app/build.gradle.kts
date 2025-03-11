@@ -52,6 +52,9 @@ dependencies {
 
     implementation(libs.logging.interceptor)
 
+    implementation("com.github.yalantis:ucrop:2.2.8")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+
     implementation(libs.androidx.compose.bom.v20240200)
     implementation(libs.androidx.webkit)
 // Room

@@ -16,9 +16,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://jitpack.io") } // Add JitPack here
     }
 }
 
 rootProject.name = "Food Lens"
 include(":app")
- 

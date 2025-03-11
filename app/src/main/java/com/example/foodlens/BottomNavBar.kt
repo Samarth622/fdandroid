@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
@@ -16,21 +17,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
 @Composable
 fun FloatingBottomNavigation(navHostController: NavHostController) {
     val items = listOf("home", "search", "suggestion", "profile",)
-    val icons = listOf(Icons.Default.Home, Icons.Default.Search, Icons.Default.Notifications, Icons.Default.Person)
+    val icons = listOf(R.drawable.home,R.drawable.upload,R.drawable.heart,R.drawable.person)
 
-
-//    val items = listOf("home", "suggestion", "profile",)
-//    val icons = listOf(Icons.Default.Home, Icons.Default.Notifications, Icons.Default.Person)
     // Track current destination
     val currentDestination by navHostController.currentBackStackEntryAsState()
     val selectedItem = items.indexOf(currentDestination?.destination?.route)
@@ -75,7 +71,7 @@ fun FloatingBottomNavigation(navHostController: NavHostController) {
                             )
                     ) {
                         Icon(
-                            imageVector = icons[index],
+                            painter = painterResource(id = icons[index]),
                             modifier = Modifier.scale(1.4f),
                             contentDescription = route,
                             tint = Color.Gray

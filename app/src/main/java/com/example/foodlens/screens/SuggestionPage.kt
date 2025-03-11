@@ -54,6 +54,7 @@ fun SuggestionPage(navHostController: NavHostController, viewModel: UserViewMode
     // Load the saved language (set in GetStarted)
     val selectedLanguage = preferences.getString("language", "English") ?: "English"
 
+
     // Fetch recommendations on load
     LaunchedEffect(Unit) {
         coroutineScope.launch {
@@ -121,15 +122,16 @@ fun SuggestionPage(navHostController: NavHostController, viewModel: UserViewMode
 
 @Composable
 fun SuggestionContent(recommendations: List<FoodRecommendation>, lan: String) {
+    val isHindi = lan == "Hindi"
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         recommendations.forEach { recommendation ->
             SuggestionItem(
-                item = if(lan == "en") recommendation.productName_en else recommendation.productName_hi,
-                description = if(lan == "en") recommendation.benefits_en else recommendation.benefits_hi,
-                category = if(lan == "en") recommendation.category_en else recommendation.category_hi
+                item = if(isHindi) recommendation.productName_hi else recommendation.productName_en,
+                description = if(isHindi) recommendation.benefits_hi else recommendation.benefits_en,
+                category = if(isHindi) recommendation.category_hi else recommendation.category_en
             )
         }
     }

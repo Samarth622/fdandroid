@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -36,20 +37,18 @@ import com.example.foodlens.UserViewModel
 import com.example.foodlens.network.RetrofitClient
 import com.example.foodlens.networks.LoginApiService
 import com.google.gson.Gson
+import com.yalantis.ucrop.UCrop
+import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.io.FileOutputStream
-import android.widget.Toast
-import kotlinx.coroutines.launch
 
 @Composable
 fun UploadScreen(navHostController: NavHostController, viewModel: UserViewModel) {
     val context = LocalContext.current
     val preferences = remember { context.getSharedPreferences("settings", Context.MODE_PRIVATE) }
-
-    // Load the saved language (set in GetStarted)
     val selectedLanguage = preferences.getString("language", "English") ?: "English"
 
     Box(
@@ -65,11 +64,8 @@ fun UploadScreen(navHostController: NavHostController, viewModel: UserViewModel)
         )
 
         Heading()
-
         ImageField()
-
         UploadImageType(navHostController)
-
         FloatingBottomNavigation(navHostController)
     }
 }
@@ -134,37 +130,55 @@ fun UploadImageType(navHostController: NavHostController) {
     val apiService: LoginApiService = RetrofitClient.getApiService(context)
 
     var capturedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var croppedImageUri by remember { mutableStateOf<Uri?>(null) }
     var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var isAnalyzing by remember { mutableStateOf(false) }
 
-    val cameraLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                capturedImageUri?.let { uri ->
-                    try {
-                        imageBitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-                        Log.d("UploadScreen", "Image captured from camera: $uri")
-                    } catch (e: Exception) {
-                        Log.e("UploadScreen", "Error loading camera image: ${e.message}")
-                        Toast.makeText(context, R.string.error_loading_image, Toast.LENGTH_SHORT).show()
-                    }
-                }
+    // Launcher for UCrop
+    val cropLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val resultUri = UCrop.getOutput(result.data!!)
+            croppedImageUri = resultUri
+            try {
+                imageBitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, resultUri)
+                Log.d("UploadScreen", "Image cropped successfully: $resultUri")
+            } catch (e: Exception) {
+                Log.e("UploadScreen", "Error loading cropped image: ${e.message}")
+                Toast.makeText(context, R.string.error_loading_image, Toast.LENGTH_SHORT).show()
             }
+        } else if (result.resultCode == UCrop.RESULT_ERROR) {
+            val cropError = UCrop.getError(result.data!!)
+            Log.e("UploadScreen", "Crop error: ${cropError?.message}")
+            Toast.makeText(context, "Crop failed: ${cropError?.message}", Toast.LENGTH_SHORT).show()
         }
+    }
 
-    val galleryLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            uri?.let {
-                capturedImageUri = it
-                try {
-                    imageBitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, it)
-                    Log.d("UploadScreen", "Image selected from gallery: $uri")
-                } catch (e: Exception) {
-                    Log.e("UploadScreen", "Error loading gallery image: ${e.message}")
-                    Toast.makeText(context, R.string.error_loading_image, Toast.LENGTH_SHORT).show()
-                }
+    // Function to start UCrop activity, defined before launchers
+    val startCropActivity: (Context, Uri) -> Unit = { ctx, sourceUri ->
+        val destinationUri = Uri.fromFile(File(ctx.cacheDir, "cropped_image.jpg"))
+        UCrop.of(sourceUri, destinationUri)
+            .withAspectRatio(1f, 1f) // Optional: Square crop, adjust as needed
+            .withMaxResultSize(512, 512) // Optional: Max size, adjust as needed
+            .getIntent(ctx).let { intent ->
+                cropLauncher.launch(intent)
+            }
+    }
+
+    // Launcher for camera
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            capturedImageUri?.let { uri ->
+                startCropActivity(context, uri) // Use the defined function
             }
         }
+    }
+
+    // Launcher for gallery
+    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            startCropActivity(context, it) // Use the defined function
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -180,7 +194,7 @@ fun UploadImageType(navHostController: NavHostController) {
             ) {
                 Image(
                     bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "Selected Image",
+                    contentDescription = "Cropped Image",
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
                         .size(220.dp),

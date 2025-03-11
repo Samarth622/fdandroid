@@ -222,8 +222,8 @@ fun MeterArc(value: Float, modifier: Modifier = Modifier) {
             value < 1.25 -> colorResource(R.color.red)
             value in 1.25f..2.9f -> colorResource(R.color.orange)
             value in 3.0f..3.9f -> colorResource(R.color.yellow)
-            value in  4.0..5.0 -> colorResource(R.color.green)
-            else -> colorResource(R.color.black)
+            
+            else -> colorResource(R.color.green)
         }
 
         Canvas(modifier = modifier.size(400.dp)) {

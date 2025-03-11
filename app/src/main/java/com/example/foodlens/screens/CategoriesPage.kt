@@ -3,6 +3,7 @@ package com.example.foodlens.screens
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,6 +35,7 @@ import com.example.foodlens.network.RetrofitClient
 import com.example.foodlens.networks.Product
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SuspiciousIndentation")
 @Composable
 fun CategoriesPage(navHostController: NavHostController, viewModel: UserViewModel) {
@@ -41,6 +45,7 @@ fun CategoriesPage(navHostController: NavHostController, viewModel: UserViewMode
     var products by remember { mutableStateOf<List<Product>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     val category by viewModel.category.collectAsState()
+    var searchQuery by remember { mutableStateOf("") } // State for search input
 
     LaunchedEffect(category) {
         if (category != null) {
@@ -75,15 +80,49 @@ fun CategoriesPage(navHostController: NavHostController, viewModel: UserViewMode
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         TopAppBar(navHostController, "Products")
+
+        // Search Bar
+        Row(modifier = Modifier.fillMaxWidth(.9f).padding(top=20.dp), horizontalArrangement = Arrangement.Center){
+            OutlinedTextField(
+                textStyle = TextStyle.Default.copy(Color.Black, fontSize = 18.sp),
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White, RoundedCornerShape(0))
+                ,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search Icon",
+                        tint = Color.Gray
+                    )
+                },
+                placeholder = { Text("Search products...") },
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = Color(171, 176, 176, 206),
+                    unfocusedBorderColor = Color.LightGray
+                )
+            )
+        }
+
 
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         } else {
-            if (products.isEmpty()) {
+            val filteredProducts = if (searchQuery.isNotEmpty()) {
+                products.filter { product ->
+                    product.name?.startsWith(searchQuery, ignoreCase = true) == true
+                }
+            } else {
+                products
+            }
+
+            if (filteredProducts.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text("No products available", color = Color.Gray, fontSize = 16.sp)
                 }
@@ -93,7 +132,8 @@ fun CategoriesPage(navHostController: NavHostController, viewModel: UserViewMode
                     modifier = Modifier.fillMaxSize()
                 ) {
                     item { Spacer(modifier = Modifier.height(10.dp)) }
-                    items(products.chunked(2)) { rowItems ->
+
+                    items(filteredProducts.chunked(2)) { rowItems ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = if (rowItems.size == 1) Arrangement.Center else Arrangement.SpaceEvenly
@@ -175,8 +215,8 @@ fun ProductItem(navController: NavHostController, product: Product) {
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
                 maxLines = 1,
-                textAlign = TextAlign.Center, // Ensure center alignment
-                modifier = Modifier.fillMaxWidth() // Make text take full width to center properly
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
